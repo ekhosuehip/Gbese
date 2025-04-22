@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import config from './config/config.ts';
+import config from './config/config';
 
 const app = express()
 
