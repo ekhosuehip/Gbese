@@ -5,7 +5,9 @@
 - **MongoDB** for storing notes and user data.
 - **Mongoose** for object modeling and schema definition.
 - **TypeScript** for type safety and better maintainability.
+- **Redis** for temporary storage.
 - **JWT** for user authentication.
+- **Joi** for validation.
 
 ### Installation
 
@@ -37,3 +39,26 @@
 ### Health Check
 
 - `GET /api/health` — A simple endpoint to check if the server is running.
+
+### 📲 Phone Number OTP Flow
+
+1. Receive OTP:
+- `POST /api/v1/phone/register`
+Request Body
+   ```bash
+   {
+      "phone": "2348012345678"
+   }
+   ```
+
+2. Verify OTP:
+- `POST /api/v1/phone/verify`
+Request Body
+   ```bash
+   {
+      "otp": "otp received",
+      "key": "key_received_after_otp"
+   }
+   ```
+
+
