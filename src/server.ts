@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/config';
+import phoneRouter from './routes/phoneRoutes';
 
 const app = express()
 
@@ -25,6 +26,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 
+// Security Middleware - Fixed redirect handling
+app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : 'loopback');
+
 //Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -33,6 +37,9 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+//Endpoints
+app.use('/api/v1', phoneRouter);
 
 // 404 Handler 
 app.use((req, res) => {
