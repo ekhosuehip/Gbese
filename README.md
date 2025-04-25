@@ -43,7 +43,7 @@
 ### 📲 Phone Number OTP Flow
 
 1. Receive OTP:
-- `POST /api/v1/phone/register`
+- `POST /api/v1/phone/register` -
 Request Body
    ```bash
    {
@@ -52,7 +52,7 @@ Request Body
    ```
 
 2. Verify OTP:
-- `POST /api/v1/phone/verify`
+- `POST /api/v1/phone/verify` -
 Request Body
    ```bash
    {
