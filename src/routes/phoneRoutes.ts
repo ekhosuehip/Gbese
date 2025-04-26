@@ -29,7 +29,6 @@ const router = Router()
  *         description: Invalid phone number
  */
 router.post('/phone/register', validate(phoneSchema.getOTP), userNumber);
-
 /**
  * @swagger
  * /api/v1/phone/verify:
