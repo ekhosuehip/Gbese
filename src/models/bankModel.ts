@@ -5,8 +5,9 @@ const bankSchema = new Schema<IBank> ({
     name: {type: String, required: true, unique: true, trim: true},
     code: {type: String, required: true, unique: true, trim: true},
     },
-    {timestamps: true, versionKey: false}
+    {timestamps: false, versionKey: false}
 )
 
 const Banks = model<IBank>('Banks', bankSchema);
+
 export default Banks
