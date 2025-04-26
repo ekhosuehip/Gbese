@@ -32,7 +32,7 @@ export const userNumber = async (req: Request, res: Response, next: NextFunction
         phoneNumber: otpResponse.phone_number,
         attempts: "0",
       });
-      await client.expire(redisId, 3600); // set expiration to 1 hour
+      await client.expire(redisId, 360); // set expiration to 1 hour
 
     // Respond to user
     res.status(200).json({
@@ -52,7 +52,7 @@ export const userNumber = async (req: Request, res: Response, next: NextFunction
 };
 
 //verify OTP
-export const verifyNumber = async (req: Request, res: Response) => {
+export const verifyNumber = async (req: Request, res: Response, next: NextFunction) => {
   const { otp, key } = req.body;
 
   try {
@@ -75,7 +75,7 @@ export const verifyNumber = async (req: Request, res: Response) => {
     if (attempts >= 5) {
       res.status(429).json({
         success: false,
-        message: "Too many incorrect attempts. OTP verification blocked.",
+        message: "Too many incorrect attempts. OTP verification blocked. Try in 6 mins",
       });
       return;
     }
