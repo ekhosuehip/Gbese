@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/v1/phone/login:
+ * /api/v2/login:
  *   post:
  *     summary: Login with email and password
  *     tags:
