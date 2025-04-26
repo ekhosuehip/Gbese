@@ -11,7 +11,7 @@ const options: swaggerJSDoc.Options = {
     },
     servers: [
       {
-        url: 'https://gbese.onrender.com',
+        url: 'http://localhost:3000',
       },
     ],
   },

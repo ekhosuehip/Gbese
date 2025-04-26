@@ -44,6 +44,9 @@ router.post('/phone/register', validate(phoneSchema.getOTP), userNumber);
  *           schema:
  *             type: object
  *             properties:
+ *              otp:
+ *                 type: string
+ *                 example: "12345"
  *               key:
  *                 type: string
  *                 example: "8e6jjrspxc"

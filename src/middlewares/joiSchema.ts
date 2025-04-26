@@ -12,7 +12,7 @@ export const phoneSchema = {
     }),
     verify: Joi.object({
         otp: Joi.string()
-        .length(4)
+        .length(5)
         .pattern(/^[0-9]{4}$/)
         .required()
         .messages({
