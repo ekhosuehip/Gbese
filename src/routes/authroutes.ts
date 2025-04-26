@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { login } from '../controllers/authController';
+import { login, signUp } from '../controllers/authController';
 
 const router = Router();
 
+router.post('/signup', signUp);
 /**
  * @swagger
  * /api/v1/phone/login:
