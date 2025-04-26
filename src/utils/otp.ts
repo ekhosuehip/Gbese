@@ -15,7 +15,7 @@ export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
     channel: "generic",
     pin_attempts: 10,
     pin_time_to_live: 5,
-    pin_length: 4,
+    pin_length: 5,
     pin_placeholder: "< 1234 >",
     message_text: "*DO NOT DISCLOSE* Your One Time Temporary Pin is: < 1234 >. This pin will expire in 5 mins.",
     pin_type: "NUMERIC"
