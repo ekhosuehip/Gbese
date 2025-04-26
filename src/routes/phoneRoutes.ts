@@ -47,7 +47,7 @@ router.post('/phone/register', validate(phoneSchema.getOTP), userNumber);
  *               key:
  *                 type: string
  *                 example: "8e6jjrspxc"
- *              otp:
+ *               otp:
  *                 type: string
  *                 example: "12345"
  *     responses:
@@ -56,6 +56,7 @@ router.post('/phone/register', validate(phoneSchema.getOTP), userNumber);
  *       400:
  *         description: Invalid or expired OTP
  */
+
 router.post('/phone/verify', validate(phoneSchema.verify), verifyNumber);
 
 export default router
