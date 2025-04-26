@@ -13,7 +13,7 @@ export const phoneSchema = {
     verify: Joi.object({
         otp: Joi.string()
         .length(5)
-        .pattern(/^[0-9]{4}$/)
+        .pattern(/^[0-9]{5}$/)
         .required()
         .messages({
             'string.length': 'OTP must be exactly 5 digits long',
