@@ -5,13 +5,13 @@ const options: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Gbese API',
-      version: '1.0.0',
-      description: 'API for Gbese',
+        title: 'Gbese API',
+        description: 'API Documentation for Gbese 🚀',
+        version: '1.0.0',
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'https://gbese.onrender.com',
       },
     ],
   },
