@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/v1/banks/all:
+ * /api/v3/banks/all:
  *   get:
  *     summary: Request to get all banks name and code
  *     tags:
@@ -20,7 +20,7 @@ router.get('/banks/all', fetchAllBanks);
 
 /**
  * @swagger
- * /api/v1/bank:
+ * /api/v3/bank:
  *   get:
  *     summary: Request a specific bank by name
  *     tags:
