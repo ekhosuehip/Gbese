@@ -4,7 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/config';
 import phoneRouter from './routes/phoneRoutes';
-import bankRouter from './routes/bankRoutes'
+import bankRouter from './routes/bankRoutes';
+import authRouter from './routes/authroutes';
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 
 const app = express()
@@ -44,6 +45,7 @@ app.get('/api/health', (req, res) => {
 
 //Endpoints
 app.use('/api/v1', phoneRouter);
+app.use('/api/v2', authRouter)
 app.use('/api/v3', bankRouter);
 // 404 Handler 
 app.use((req, res) => {
