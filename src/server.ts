@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/config';
 import phoneRouter from './routes/phoneRoutes';
+import { swaggerUi, swaggerSpec } from './docs/swagger';
 
 const app = express()
 
@@ -25,6 +26,8 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // Security Middleware - Fixed redirect handling
 app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : 'loopback');
