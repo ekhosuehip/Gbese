@@ -22,7 +22,7 @@ router.get('/banks/all', fetchAllBanks);
  * @swagger
  * /api/v1/bank:
  *   get:
- *     summary: Request a specific bank by name or code
+ *     summary: Request a specific bank by name
  *     tags:
  *       - Bank
  *     parameters:
@@ -31,7 +31,7 @@ router.get('/banks/all', fetchAllBanks);
  *         schema:
  *           type: string
  *         required: true
- *         description: Bank name or code to fetch
+ *         description: Bank name to fetch
  *     responses:
  *       200:
  *         description: Bank fetched successfully

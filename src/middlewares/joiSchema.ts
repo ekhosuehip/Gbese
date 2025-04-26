@@ -16,8 +16,7 @@ export const phoneSchema = {
         .pattern(/^[0-9]{4}$/)
         .required()
         .messages({
-            'string.length': 'OTP must be exactly 4 digits long',
-            'string.pattern.base': 'OTP must contain only digits',
+            'string.length': 'OTP must be exactly 5 digits long',
             'any.required': 'OTP is required',
         }),
         key: Joi.string()
@@ -26,7 +25,6 @@ export const phoneSchema = {
         .required()
         .messages({
             'string.length': 'Key must be exactly 10 characters',
-            'string.pattern.base': 'Key must contain only lowercase letters and numbers',
             'any.required': 'Key is required',
         }),
     }),
