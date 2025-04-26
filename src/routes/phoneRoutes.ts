@@ -19,9 +19,9 @@ const router = Router()
  *           schema:
  *             type: object
  *             properties:
- *               number:
+ *               phone:
  *                 type: string
- *                 example: "+2348012345678"
+ *                 example: "2348012345678"
  *     responses:
  *       200:
  *         description: OTP sent successfully
