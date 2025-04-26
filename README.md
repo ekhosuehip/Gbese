@@ -34,31 +34,6 @@
    git pull origin main
    ```
 
-## API Endpoints
+## API Endpoints Documentation
 
-### Health Check
-
-- `GET /api/health` — A simple endpoint to check if the server is running.
-
-### 📲 Phone Number OTP Flow
-
-1. Receive OTP:
-- `POST /api/v1/phone/register` -
-Request Body
-   ```bash
-   {
-      "phone": "2348012345678"
-   }
-   ```
-
-2. Verify OTP:
-- `POST /api/v1/phone/verify` -
-Request Body
-   ```bash
-   {
-      "otp": "otp received",
-      "key": "key_received_after_otp"
-   }
-   ```
-
-
+🔗 [API Documentation](https://gbese.onrender.com/api-docs)
