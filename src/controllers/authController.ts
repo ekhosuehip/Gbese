@@ -1,9 +1,57 @@
-import { Request, Response, NextFunction } from 'express';
+import e, { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel'; 
 import { IAuthPayload } from '../interfaces/user';
 
+
+
+// To register a user
+export const signUp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { phoneNumber } = req.body;
+
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required.",
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ phoneNumber });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number already used.",
+      });
+    }
+
+    // Create new user with phone number
+    const newUser = new User({ phoneNumber });
+    await newUser.save();
+ 
+    res.status(201).json({
+      success: true,
+      message: "Phone number submitted successfully. Please verify your phone number to continue registration.",
+      data: {
+        phoneNumber: newUser.phoneNumber,
+        userId: newUser._id, // optional to send
+      }
+    });
+
+  } catch (error) {
+    console.error('Sign-up error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+};
+
+
+// To login a user
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
