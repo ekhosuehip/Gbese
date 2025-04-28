@@ -17,7 +17,7 @@ export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
     pin_time_to_live: 5,
     pin_length: 5,
     pin_placeholder: "< 1234 >",
-    message_text: "*DO NOT DISCLOSE* Your One Time Temporary Pin is: < 1234 >. This pin will expire in 5 mins.",
+    message_text: "*DO NOT DISCLOSE* Your OTP Pin < 1234 >. This pin will expire in 5 mins.",
     pin_type: "NUMERIC"
   };
 
@@ -37,23 +37,21 @@ export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
 
 
 export const verifyOTP = async (pinID: string, enteredPin: string): Promise<IVerify | void> => {
-    const data = {
-        api_key: apiKey,
-        pin_id: pinID,
-        pin: enteredPin
-    };
+  const data = {
+    api_key: apiKey,
+    pin_id: pinID,
+    pin: enteredPin,
+  };
 
-    axios.post('https://v3.api.termii.com/api/sms/otp/verify', data, {
-    headers: {
+  try {
+    const response = await axios.post('https://v3.api.termii.com/api/sms/otp/verify', data, {
+      headers: {
         'Content-Type': 'application/json',
-    },
-    })
-    .then((response) => {
-    console.log(response.data);
-    return response.data
-    })
-    .catch((error: any) => {
-    console.error('Error verifying OTP:', error.response?.data || error.message);
+      },
     });
-}
-
+    console.log(response.data);
+    return { verified: response.data.verified };
+  } catch (error: any) {
+    console.error('Error verifying OTP:', error.response?.data || error.message);
+  }
+};

@@ -1,18 +1,28 @@
+import { JwtPayload } from "jsonwebtoken";
+
 export enum UserRole {
-  Philanthropists = 'Philanthropists',
-  Regular = 'Regular',
+  Philanthropists = 'philanthropists',
+  Regular = 'regular',
 }
 
 export interface IUser {
-  phoneNumber: string;
-  fullName: string;
-  email: string;
-  password: string;
-  DOB: Date;
-  role: UserRole;
+  accNumber: string,
+  phoneNumber: string,
+  fullName: string,
+  email: string,
+  password: string,
+  dateOfBirth: string,
+  gender: string,
+  role: UserRole,
 }
 
 export interface IAuthPayload {
-  name: string,
+  fullName: string,
+  email: string
+}
+
+
+export interface DecodedUser extends JwtPayload {
+  userId: string,
   email: string
 }

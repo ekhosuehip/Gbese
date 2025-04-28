@@ -1,45 +1,70 @@
-import e, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel'; 
-import { IAuthPayload } from '../interfaces/user';
+import userServices from '../services/userServices';
+import { IAuthPayload, IUser } from '../interfaces/user';
+import client from "../config/redis";
+import dotenv from 'dotenv';
 
-
+dotenv.config();
 
 // To register a user
-export const signUp = async (req: Request, res: Response, next: NextFunction) => {
+export const userData = async (req: Request, res: Response, next: NextFunction) => {
+  const { key, fullName, email, password, dateOfBirth, gender } = req.body;
   try {
-    const { phoneNumber } = req.body;
+    // Fetch existing Redis data
+    const data = await client.hGetAll(key);
+    console.log(data);
+    
 
-    if (!phoneNumber) {
-      return res.status(400).json({
+    if (!data || Object.keys(data).length === 0) {
+      res.status(400).json({
         success: false,
-        message: "Phone number is required.",
+        message: "Wrong or invalid key.",
       });
+      return;
     }
+    const phoneNumber = data.phone_number
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ phoneNumber });
+    // Check if user already exists by either email or phone number
+    const existingUser = await userServices.fetchUser(email || phoneNumber);
 
     if (existingUser) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
-        message: "Phone number already used.",
+        message: "User already exists with this email or phone number.",
       });
+      return;
     }
 
-    // Create new user with phone number
-    const newUser = new User({ phoneNumber });
-    await newUser.save();
- 
-    res.status(201).json({
+    // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  console.log(hashedPassword);
+
+  const dobString = new Date(dateOfBirth).toISOString().split('T')[0];
+
+  // Save details to Redis
+  const pipeline = client.multi();
+
+   pipeline.hSet(key, {
+    name: String(fullName),
+    email: String(email),
+    password: String(hashedPassword),
+    DOB: dobString,
+    sex: String(gender),
+  });
+
+    pipeline.expire(key, 300);
+
+    await pipeline.exec();
+
+    console.log(`User data saved successfully for key: ${key}`);
+
+    res.status(200).json({
       success: true,
-      message: "Phone number submitted successfully. Please verify your phone number to continue registration.",
-      data: {
-        phoneNumber: newUser.phoneNumber,
-        userId: newUser._id, // optional to send
-      }
-    });
+      message: 'continue registration',
+      key: key
+    })
 
   } catch (error) {
     console.error('Sign-up error:', error);
@@ -47,9 +72,69 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       success: false,
       message: "Internal server error.",
     });
+    return;
   }
 };
 
+export const signUp = async (req: Request, res: Response, next: NextFunction) => {
+  const {key, role} = req.body;
+
+  try {
+    // Fetch existing Redis data
+    const data = await client.hGetAll(key);
+
+    if (!data || Object.keys(data).length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "Wrong or invalid key.",
+      });
+      return;
+    }
+
+    console.log(data);
+    const accountNumber = data.phoneNumber.slice(3);
+ 
+    // Save the new user
+    const newUser: IUser = {
+      accNumber: accountNumber,
+      phoneNumber: data.phoneNumber,
+      fullName: data.name,
+      email: data.email,
+      password: data.password,
+      dateOfBirth: data.DOB,
+      gender: data.sex,
+      role: role,
+    }
+    const user = await userServices.register(newUser);
+
+    // To generate JWT
+    const payload: IAuthPayload = {fullName: user.fullName, email: user.email};
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
+
+    // To set the token in a cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // To secure only in productions
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000 
+    }).status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        accountNumber: accountNumber,
+        name: user.fullName
+      }
+    });
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false, 
+      message: 'Internal server error' });
+    return;
+  }
+}
 
 // To login a user
 export const login = async (req: Request, res: Response, next: NextFunction) => {
@@ -57,7 +142,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const { email, password } = req.body;
 
     // To check if user exists
-    const user = await User.findOne({ email });
+    const user = await userServices.fetchUser(email);
     if (!user) {
      res.status(400).json({ 
           success: false, 
@@ -75,22 +160,21 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     // To generate JWT
-    const payload: IAuthPayload = {name: user.fullName, email: email};
+    const payload: IAuthPayload = {fullName: user.fullName, email: email};
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '20m' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
 
     // To set the token in a cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // To secure only in productions
       sameSite: 'strict',
-      maxAge: 20 * 60 * 1000 
+      maxAge: 60 * 60 * 1000 
     }).status(200).json({
       success: true,
       message: 'Login successful',
       name: user.fullName
     });
-    return;
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({

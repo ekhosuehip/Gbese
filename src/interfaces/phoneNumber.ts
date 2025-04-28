@@ -23,8 +23,5 @@ export interface IData {
 }
 
 export interface IVerify {
-  verified: boolean,
-  pinId: string,
-  msisdn: string,
-  attemptsRemaining: number
+  verified: boolean;
 }
