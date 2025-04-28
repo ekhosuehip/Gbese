@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { userNumber, verifyNumber } from '../controllers/phoneController';
+import { userIdentity, verifyNumber} from '../controllers/phoneController';
 import {validate} from '../middlewares/joi';
 import {phoneSchema} from '../middlewares/joiSchema';
 
@@ -28,7 +28,7 @@ const router = Router()
  *       400:
  *         description: Invalid phone number
  */
-router.post('/phone/register', validate(phoneSchema.getOTP), userNumber);
+router.post('/phone/register', validate(phoneSchema.getOTP), userIdentity);
 
 /**
  * @swagger
