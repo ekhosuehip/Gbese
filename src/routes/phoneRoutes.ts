@@ -59,4 +59,6 @@ router.post('/phone/register', validate(phoneSchema.getOTP), userIdentity);
 
 router.post('/phone/verify', validate(phoneSchema.verify), verifyNumber);
 
+// router.post('/forget', forgetPassword)
+
 export default router
