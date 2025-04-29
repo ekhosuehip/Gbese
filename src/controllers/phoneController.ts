@@ -3,7 +3,7 @@ import {sendOTP, verifyOTP} from "../utils/otp";
 import client from "../config/redis";
 import { customAlphabet } from 'nanoid';
 import {formatPhoneNumber} from '../utils/nomberFormat';
-import { IVerify } from "../interfaces/phoneNumber";
+import userServices from "../services/userServices";
 
 //Get OTP
 export const userIdentity = async (req: Request, res: Response, next: NextFunction) => {
@@ -110,3 +110,33 @@ export const verifyNumber = async (req: Request, res: Response, next: NextFuncti
     return;
   }
 };
+
+// export const forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
+//   const { email } = req.body;
+
+//   try {
+//     // To check if user exists
+//     const user = await userServices.fetchUser(email);
+//     if (!user) {
+//      res.status(400).json({ 
+//           success: false, 
+//           message: 'No user found' });
+//      return;
+//     }
+//     const userId = user._id.toString();
+//     const response = await sendEmail(email, userId);
+//     res.status(200).json({
+//       success: true,
+//       message: 'Email sent successfully',
+//       data: response
+//     })
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: 'Internal server error'
+//     })
+//     console.log(error);
+    
+//     return
+//   }
+// }

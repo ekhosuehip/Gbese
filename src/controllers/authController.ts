@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userServices from '../services/userServices';
+import accServices from '../services/accountServices';
 import { IAuthPayload, IUser } from '../interfaces/user';
 import client from "../config/redis";
 import dotenv from 'dotenv';
+import { IAccount } from '../interfaces/banks';
 
 dotenv.config();
 
@@ -96,7 +98,6 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
  
     // Save the new user
     const newUser: IUser = {
-      accNumber: accountNumber,
       phoneNumber: data.phoneNumber,
       fullName: data.name,
       email: data.email,
@@ -106,6 +107,15 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       role: role,
     }
     const user = await userServices.register(newUser);
+
+    //Create new acc
+    const accdata: IAccount = {
+      _id: user._id,
+      accNumber: accountNumber,
+      balance: 0.00,
+      creditLimit: 50000
+    }
+    const userAccount = await accServices.createAccount(accdata)
 
     // To generate JWT
     const payload: IAuthPayload = {fullName: user.fullName, email: user.email};
@@ -124,7 +134,8 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       data: {
         accountNumber: accountNumber,
         name: user.fullName
-      }
+      },
+      Account_Data: userAccount
     });
     
   } catch (error) {

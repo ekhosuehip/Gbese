@@ -6,6 +6,8 @@ dotenv.config();
 
 const apiKey = process.env.OTP_SECRET
 
+const emailConfig = process.env.EMAIL
+
 export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
   const data: IData = {
     api_key: apiKey as string,
@@ -55,3 +57,26 @@ export const verifyOTP = async (pinID: string, enteredPin: string): Promise<IVer
     console.error('Error verifying OTP:', error.response?.data || error.message);
   }
 };
+
+// export const sendEmail = async (email: string, userId: string) => {
+
+//   const data = {
+//     api_key: apiKey,
+//     email_address: email,
+//     code: `https://gbese.vercel.app/${userId}`,
+//     email_configuration_id: emailConfig
+//   };
+
+//   axios.post('https://v3.api.termii.com/api/email/otp/send', data, {
+//     headers: {
+//       'Content-Type': 'application/json'
+//     }
+//   })
+//   .then(response => {
+//     console.log(response.data);
+//     return response.data
+//   })
+//   .catch(error => {
+//     console.error(error);
+//   });
+// }
