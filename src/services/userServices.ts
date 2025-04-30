@@ -20,6 +20,7 @@ class UserServices {
             throw new Error("Invalid email or phone number format");
         }
     }
+
 };
 
 const userServices = new UserServices;

@@ -3,7 +3,6 @@ import {sendOTP, verifyOTP} from "../utils/otp";
 import client from "../config/redis";
 import { customAlphabet } from 'nanoid';
 import {formatPhoneNumber} from '../utils/nomberFormat';
-import userServices from "../services/userServices";
 
 //Get OTP
 export const userIdentity = async (req: Request, res: Response, next: NextFunction) => {

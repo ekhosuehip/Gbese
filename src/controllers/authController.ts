@@ -131,10 +131,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     }).status(201).json({
       success: true,
       message: 'User registered successfully',
-      data: {
-        accountNumber: accountNumber,
-        name: user.fullName
-      },
+      name: user.fullName,
       Account_Data: userAccount
     });
     
