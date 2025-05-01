@@ -70,3 +70,42 @@ export const userSchema = {
       }),
   }),
 };
+
+export const debtSchema = {
+  createDebtData: Joi.object({
+    bankCode: Joi.string().required().messages({
+      'string.empty': 'Bank code is required.',
+    }),
+
+    bankName: Joi.string().trim().required().messages({
+      'string.empty': 'Bank name is required.',
+    }),
+
+    accountNumber: Joi.string().trim().required().messages({
+      'string.empty': 'Account number is required.',
+    }),
+
+    description: Joi.string().allow('').optional().messages({
+      'string.base': 'Note must be a string.',
+    }),
+
+    amount: Joi.number().required().messages({
+      'number.base': 'Amount must be a number.',
+      'any.required': 'Amount is required.',
+    }),
+
+    dueDate: Joi.string().isoDate().required().messages({
+      'string.isoDate': 'Due date must be a valid ISO date.',
+      'string.empty': 'Due date is required.',
+    }),
+
+    interestRate: Joi.number().optional().messages({
+      'number.base': 'Interest rate must be a number.',
+    }),
+
+    incentives: Joi.number().required().messages({
+      'number.base': 'Incentives must be a number.',
+      'any.required': 'Incentives are required.',
+    }),
+  }),
+};

@@ -8,8 +8,9 @@ dotenv.config();
 // This middleware function checks if the request has a valid JWT token in the cookies or the authorization header.
 export interface AuthenticatedRequest extends Request {
   user?: DecodedUser;
+  file?: Express.Multer.File;
 }
-const secretKey: string | undefined = process.env.ACCESS_TOKEN_SECRET;
+const secretKey: string | undefined = process.env.JWT_SECRET;
 
 export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];

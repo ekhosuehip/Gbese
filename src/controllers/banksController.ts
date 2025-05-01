@@ -7,9 +7,11 @@ import banksServices from '../services/bankService';
 export const fetchAllBanks = async(req: Request, res: Response, next: NextFunction) => {
     try {
         const banks = await banksServices.fetchAllBanks()
+        console.log(banks);
+        
         res.status(200).json({
             success: true,
-            message: 'Banks fetched successfully',
+            message: banks.length > 0 ? 'Banks fetched successfully' : 'No banks found',
             data: banks
         });
         return;

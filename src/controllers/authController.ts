@@ -106,16 +106,20 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       gender: data.sex,
       role: role,
     }
+
+    const gbeseCoins = role === "benefactor" ? 2000 : 3500;
+
     const user = await userServices.register(newUser);
 
     //Create new acc
-    const accdata: IAccount = {
+    const accData: IAccount = {
       _id: user._id,
+      coins: gbeseCoins,
       accNumber: accountNumber,
       balance: 0.00,
       creditLimit: 50000
     }
-    const userAccount = await accServices.createAccount(accdata)
+    const userAccount = await accServices.createAccount(accData)
 
     // To generate JWT
     const payload: IAuthPayload = {fullName: user.fullName, email: user.email};
