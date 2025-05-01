@@ -9,10 +9,12 @@ const userSchema = new Schema<IUser>({
   dateOfBirth: { type:String, required: true },
   gender: { type: String, required: true, trim: true },
   role: { 
-        type: String, 
-        enum: Object.values(UserRole), 
-        required: true,
-      },
+    type: String, 
+    enum: Object.values(UserRole), 
+    required: true,
+  },
+  bvn: {type: String, unique: true, trim: true},
+  isKycComplete: { type: Boolean, default: false }
 }, { timestamps: true, versionKey: false });
 
 const User = model<IUser>('User', userSchema);

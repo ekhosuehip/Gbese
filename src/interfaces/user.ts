@@ -1,8 +1,8 @@
 import { JwtPayload } from "jsonwebtoken";
 
 export enum UserRole {
-  Philanthropists = 'philanthropists',
-  Regular = 'regular',
+  Beneficiary = 'beneficiary',
+  Benefactor = 'benefactor',
 }
 
 export interface IUser {
@@ -12,6 +12,8 @@ export interface IUser {
   password: string,
   dateOfBirth: string,
   gender: string,
+  bvn?: string,
+  isKycComplete?: Boolean,
   role: UserRole,
 }
 
