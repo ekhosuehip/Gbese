@@ -5,12 +5,23 @@ export interface IBank {
 }
 
 export interface IAccount {
-    _id: Types.ObjectId,
-    coins: number,
-    accNumber: string,
-    balance: number,
-    creditLimit: number
+  _id: Types.ObjectId;
+  type: 'beneficiary';
+  coins: number;
+  accNumber: string;
+  balance: number;
+  creditLimit: number;
 }
+
+export interface IInvestorStats {
+  _id: Types.ObjectId;
+  type: 'benefactor';
+  amountInvested: number;
+  helped: number;
+  RIO: number;
+}
+
+
 
 export interface IBankResponse {
   status: boolean;
