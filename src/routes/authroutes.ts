@@ -5,6 +5,56 @@ import { userSchema } from '../middlewares/joiSchema'
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/v2/User:
+ *   post:
+ *     summary: Save user data to Redis during sign-up
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - key
+ *               - fullName
+ *               - email
+ *               - password
+ *               - dateOfBirth
+ *               - gender
+ *             properties:
+ *               key:
+ *                 type: string
+ *                 example: verify_2348012345678
+ *               fullName:
+ *                 type: string
+ *                 example: Jane Doe
+ *               email:
+ *                 type: string
+ *                 example: jane@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: StrongPassword123!
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *                 example: 1995-08-12
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *                 example: female
+ *     responses:
+ *       200:
+ *         description: User data saved successfully, continue with registration
+ *       400:
+ *         description: Invalid Redis key or user already exists
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/user', validate(userSchema.signInData), userData)
 
 /**
