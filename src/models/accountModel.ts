@@ -10,7 +10,7 @@ const options = {
 const baseAccountSchema = new Schema(
   {
     _id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    type: { type: String, required: true, enum: ['regular', 'investor'] }
+    type: { type: String, required: true, enum: ['beneficiary', 'benefactor'] }
   },
   options
 );
@@ -23,7 +23,7 @@ const regularAccountSchema = new Schema({
   coins: { type: Number },
   accNumber: { type: String },
   balance: { type: Number, required: true, default: 0.0 },
-  creditLimit: { type: Number, required: true, default: 50000 }
+  creditLimit: { type: Number, required: true, default: 50000.00 }
 });
 
 // Investor schema
@@ -34,7 +34,7 @@ const investorSchema = new Schema({
 });
 
 // Create discriminators
-const RegularAccount = Account.discriminator<IAccount>('regular', regularAccountSchema);
-const InvestorAccount = Account.discriminator<IInvestorStats>('investor', investorSchema);
+const RegularAccount = Account.discriminator<IAccount>('beneficiary', regularAccountSchema);
+const InvestorAccount = Account.discriminator<IInvestorStats>('benefactor', investorSchema);
 
 export { Account, RegularAccount, InvestorAccount };

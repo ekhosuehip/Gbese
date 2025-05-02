@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IUser, UserRole } from '../interfaces/user';
+import { IUser } from '../interfaces/user';
 
 const userSchema = new Schema<IUser>({
   fullName: { type: String, required: true, trim: true },
@@ -8,11 +8,7 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true, trim: true },
   dateOfBirth: { type:String, required: true },
   gender: { type: String, required: true, trim: true },
-  role: { 
-    type: String, 
-    enum: Object.values(UserRole), 
-    required: true,
-  },
+  type: { type: String, required: true},
   bvn: {type: String, unique: true, trim: true},
   isKycComplete: { type: Boolean, default: false }
 }, { timestamps: true, versionKey: false });

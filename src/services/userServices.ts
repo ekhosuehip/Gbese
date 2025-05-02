@@ -14,6 +14,8 @@ class UserServices {
         const query = isEmail ? { email: identifier } : { phoneNumber: identifier };
         return await User.findOne(query);
     }
+<<<<<<< HEAD
+=======
 
 
   
@@ -74,6 +76,7 @@ class UserServices {
           }
 
 
+>>>>>>> origin/main
 };
 
 const userServices = new UserServices;

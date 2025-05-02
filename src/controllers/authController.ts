@@ -82,7 +82,7 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
 
 // Sign up
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
-  const { key, role } = req.body;
+  const { key, type } = req.body;
 
   try {
     // Fetch existing Redis data
@@ -107,19 +107,19 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       password: data.password,
       dateOfBirth: data.DOB,
       gender: data.sex,
-      role: role,
+      type: type,
     };
 
     // Register user first to get the ID
     const user = await userServices.register(newUser);
 
     // Assign coins based on role
-    const gbeseCoins = role === "benefactor" ? 2000 : 3500;
+    const gbeseCoins = type === "benefactor" ? 2000 : 3500;
 
     // Create account data
     let accData: IAccount | IInvestorStats;
 
-    if (role === "beneficiary") {
+    if (type === "beneficiary") {
       const beneficiaryAccount: IAccount = {
         _id: user._id,
         type: 'beneficiary',
