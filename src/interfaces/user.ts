@@ -1,9 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
 
-export enum UserRole {
-  Beneficiary = 'beneficiary',
-  Benefactor = 'benefactor',
-}
 
 export interface IUser {
   phoneNumber: string,
@@ -14,7 +10,7 @@ export interface IUser {
   gender: string,
   bvn?: string,
   isKycComplete?: Boolean,
-  role: UserRole,
+  type: 'beneficiary' | 'benefactor',
 }
 
 export interface IAuthPayload {

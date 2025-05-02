@@ -78,7 +78,7 @@ router.post('/user', validate(userSchema.signInData), userData)
  *                 type: string
  *                 description: Redis key pointing to user signup data
  *                 example: signup_abc123
- *               role:
+ *               type:
  *                 type: string
  *                 enum: [benefactor, beneficiary]
  *                 description: User role for account creation

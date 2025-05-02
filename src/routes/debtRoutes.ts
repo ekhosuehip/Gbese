@@ -54,8 +54,8 @@ router.use(protect)
  *                 type: number
  *                 example: 3.5
  *               incentives:
- *                 type: string
- *                 example: "5% discount on early payment"
+ *                 type: number
+ *                 example: 5
  *               statementFile:
  *                 type: string
  *                 format: file

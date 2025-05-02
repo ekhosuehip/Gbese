@@ -13,8 +13,6 @@ class UserServices {
         const query = isEmail ? { email: identifier } : { phoneNumber: identifier };
         return await User.findOne(query);
     }
-
-
 };
 
 const userServices = new UserServices;
