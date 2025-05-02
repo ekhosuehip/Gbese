@@ -27,35 +27,34 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
       });
       return;
     }
-    const phoneNumber = data.phone_number
 
-    // Check if user already exists by either email or phone number
-    const existingUser = await userServices.fetchUser(email || phoneNumber);
+    // Check if email already exists 
+    const existingUser = await userServices.fetchUser(email);
 
     if (existingUser) {
       res.status(400).json({
         success: false,
-        message: "User already exists with this email or phone number.",
+        message: "User already exists with this email.",
       });
       return;
     }
 
     // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
-  console.log(hashedPassword);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(hashedPassword);
 
-  const dobString = new Date(dateOfBirth).toISOString().split('T')[0];
+    const dobString = new Date(dateOfBirth).toISOString().split('T')[0];
 
-  // Save details to Redis
-  const pipeline = client.multi();
+    // Save details to Redis
+    const pipeline = client.multi();
 
-   pipeline.hSet(key, {
-    name: String(fullName),
-    email: String(email),
-    password: String(hashedPassword),
-    DOB: dobString,
-    sex: String(gender),
-  });
+    pipeline.hSet(key, {
+      name: String(fullName),
+      email: String(email),
+      password: String(hashedPassword),
+      DOB: dobString,
+      sex: String(gender),
+    });
 
     pipeline.expire(key, 300);
 

@@ -6,7 +6,7 @@ import config from './config/config';
 import phoneRouter from './routes/phoneRoutes';
 import bankRouter from './routes/bankRoutes';
 import authRouter from './routes/authroutes';
-import debtRouter from './routes/debtRoutes'
+import debtRouter from './routes/debtRoutes';
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 import { connectRedis } from './config/redis';
 
