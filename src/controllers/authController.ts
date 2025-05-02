@@ -10,6 +10,7 @@ import { IAccount } from '../interfaces/banks';
 
 dotenv.config();
 
+
 // To register a user
 export const userData = async (req: Request, res: Response, next: NextFunction) => {
   const { key, fullName, email, password, dateOfBirth, gender } = req.body;
@@ -77,7 +78,7 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
     return;
   }
 };
-
+// Sign up
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const {key, role} = req.body;
 
