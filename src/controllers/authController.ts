@@ -7,6 +7,7 @@ import { IAuthPayload, IUser } from '../interfaces/user';
 import {client} from "../config/redis";
 import dotenv from 'dotenv';
 import { IAccount, IInvestorStats } from '../interfaces/banks';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -221,5 +222,102 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       success: false, 
       message: 'Internal server error' });
     return;
+  }
+};
+  
+//forgot password
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  const { email } = req.body;
+
+  try {
+    // Check if the user exists
+    const user = await userServices.fetchUser(email);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User with this email does not exist',
+      });
+    }
+
+    // Generate a reset token using jsonwebtoken
+    const resetToken = jwt.sign(
+      { email: user.email }, 
+      process.env.JWT_SECRET as string, 
+      { expiresIn: '1h' } // Token expiration (1 hour)
+    );
+
+    // Save the token and expiry on Redis
+    const resetTokenExpiry = Date.now() + 3600000; // Token valid for 1 hour
+    await userServices.saveResetToken(email, resetToken, resetTokenExpiry);
+
+    // Create a reset link
+    const resetLink = `${req.protocol}://${req.get('host')}/api/auth/reset-password/${resetToken}`;
+
+    // Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', // Use your email service provider
+      auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS, 
+      },
+    });
+
+    // Send the email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p>
+             <a href="${resetLink}">${resetLink}</a>
+             <p>If you did not request this, please ignore this email.</p>`,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset email sent successfully',
+    });
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+// Reset password
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
+
+    // Fetch the user using the email from the token
+    const user = await userServices.fetchUser(decoded.email);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired token',
+      });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    await userServices.updatePassword(user.email, hashedPassword);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully',
+    });
+  } catch (error) {
+    console.error('Reset Password Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
