@@ -4,9 +4,9 @@ import jwt from 'jsonwebtoken';
 import userServices from '../services/userServices';
 import accServices from '../services/accountServices';
 import { IAuthPayload, IUser } from '../interfaces/user';
-import client from "../config/redis";
+import {client} from "../config/redis";
 import dotenv from 'dotenv';
-import { IAccount } from '../interfaces/banks';
+import { IAccount, IInvestorStats } from '../interfaces/banks';
 
 dotenv.config();
 
@@ -78,16 +78,18 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
     return;
   }
 };
+
+
 // Sign up
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
-  const {key, role} = req.body;
+  const { key, role } = req.body;
 
   try {
     // Fetch existing Redis data
     const data = await client.hGetAll(key);
 
     if (!data || Object.keys(data).length === 0) {
-      res.status(400).json({
+     res.status(400).json({
         success: false,
         message: "Wrong or invalid key.",
       });
@@ -96,8 +98,8 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
     console.log(data);
     const accountNumber = data.phoneNumber.slice(3);
- 
-    // Save the new user
+
+    // Create user object
     const newUser: IUser = {
       phoneNumber: data.phoneNumber,
       fullName: data.name,
@@ -106,48 +108,74 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
       dateOfBirth: data.DOB,
       gender: data.sex,
       role: role,
-    }
+    };
 
-    const gbeseCoins = role === "benefactor" ? 2000 : 3500;
-
+    // Register user first to get the ID
     const user = await userServices.register(newUser);
 
-    //Create new acc
-    const accData: IAccount = {
-      _id: user._id,
-      coins: gbeseCoins,
-      accNumber: accountNumber,
-      balance: 0.00,
-      creditLimit: 50000
-    }
-    const userAccount = await accServices.createAccount(accData)
+    // Assign coins based on role
+    const gbeseCoins = role === "benefactor" ? 2000 : 3500;
 
-    // To generate JWT
-    const payload: IAuthPayload = {fullName: user.fullName, email: user.email};
+    // Create account data
+    let accData: IAccount | IInvestorStats;
+
+    if (role === "beneficiary") {
+      const beneficiaryAccount: IAccount = {
+        _id: user._id,
+        type: 'beneficiary',
+        coins: gbeseCoins,
+        accNumber: accountNumber,
+        balance: 0.00,
+        creditLimit: 50000,
+      };
+
+      accData = beneficiaryAccount;
+    } else {
+      const benefactorAccount: IInvestorStats = {
+        _id: user._id,
+        type: 'benefactor',
+        amountInvested: 0,
+        helped: 0,
+        RIO: 0,
+      };
+
+      accData = benefactorAccount;
+    }
+    
+    // Save account info
+    const userAccount = await accServices.createAccount(accData);
+
+    // JWT payload
+    const payload: IAuthPayload = {
+      fullName: user.fullName,
+      email: user.email
+    };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
 
-    // To set the token in a cookie
+    // Set token cookie and return response
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // To secure only in productions
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 1000 
+      maxAge: 60 * 60 * 1000
     }).status(201).json({
       success: true,
       message: 'User registered successfully',
       name: user.fullName,
       Account_Data: userAccount
     });
-    
-  } catch (error) {
-    console.error('Login error:', error);
+
+  } catch (error: any) {
+    console.error('Signup error:', error);
     res.status(500).json({
-      success: false, 
-      message: 'Internal server error' });
-    return;
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
   }
-}
+};
+
 
 // To login a user
 export const login = async (req: Request, res: Response, next: NextFunction) => {

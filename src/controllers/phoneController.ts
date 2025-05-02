@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import {sendOTP, verifyOTP} from "../utils/otp";
-import client from "../config/redis";
+import {client} from "../config/redis";
 import { customAlphabet } from 'nanoid';
 import {formatPhoneNumber} from '../utils/nomberFormat';
 
@@ -25,6 +25,10 @@ export const userIdentity = async (req: Request, res: Response, next: NextFuncti
       //Generate random ID 
       const generateCustomId = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
       const redisId = generateCustomId();
+
+      console.log("OTP response received:", otpResponse);
+      console.log("Redis ID generated:", redisId);
+
 
       // Save to Redis (atomic way)
       const pipeline = client.multi();

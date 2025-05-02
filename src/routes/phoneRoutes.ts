@@ -32,7 +32,7 @@ router.post('/phone/register', validate(phoneSchema.getOTP), userIdentity);
 
 /**
  * @swagger
- * /api/v1/phone/verify
+ * /api/v1/phone/verify:
  *   post:
  *     summary: Verify OTP
  *     tags:
