@@ -1,5 +1,6 @@
 import User from "../models/userModel";
 import {IUser} from '../interfaces/user';
+import { date } from "joi";
 
 class UserServices {
     // Register new user
@@ -7,19 +8,12 @@ class UserServices {
         return await User.create(data)
     }
 
-    async fetchUser(detail: string) {
-        // Check if the detail is an email or phone number by regex
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(detail);
-        const isPhoneNumber = /^[0-9]{10}$/.test(detail);
-
-        if (isEmail) {
-            return await User.findOne({ email: detail });
-        } else if (isPhoneNumber) {
-            return await User.findOne({ phoneNumber: detail });
-        } else {
-            throw new Error("Invalid email or phone number format");
-        }
+    async fetchUser(identifier: string) {
+        const isEmail = identifier.includes('@');
+        const query = isEmail ? { email: identifier } : { phoneNumber: identifier };
+        return await User.findOne(query);
     }
+
 
 };
 
