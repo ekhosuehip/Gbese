@@ -45,7 +45,7 @@ const router = Router();
  *                 example: 1995-08-12
  *               gender:
  *                 type: string
- *                 enum: [male, female, other]
+ *                 enum: [male, female]
  *                 example: female
  *     responses:
  *       200:

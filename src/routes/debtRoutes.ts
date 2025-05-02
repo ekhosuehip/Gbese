@@ -58,7 +58,7 @@ router.use(protect)
  *                 example: "5% discount on early payment"
  *               statementFile:
  *                 type: string
- *                 format: binary
+ *                 format: file
  *     security:
  *       - bearerAuth: []
  *     responses:
