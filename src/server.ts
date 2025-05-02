@@ -16,16 +16,13 @@ mongoose.connect(config.mongo.url as string)
 .then(() => console.log('Connected to Database'))
 .catch((error) => console.log('Database connection error', error));
 
-const allowedOrigins = [
-  process.env.CLIENT_ORIGIN || 'http://localhost:5173',
-  'http://localhost:3000',
-];
+// const allowedOrigins = [
+//   process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+//   'http://localhost:3000',
+// ];
 
 // Middleware
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
