@@ -84,22 +84,6 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const { key, type } = req.body;
 
-  if (!key) {
-    res.status(400).json({
-      success: false,
-      message: 'Key required'
-    })
-    return;
-  }
-
-  if (type != 'beneficiary' || type != 'benefactor') {
-    res.status(400).json({
-      success: false,
-      message: 'Invalid type'
-    })
-    return
-  }
-
   try {
     // Fetch existing Redis data
     const data = await client.hGetAll(key);
