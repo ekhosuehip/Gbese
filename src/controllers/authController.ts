@@ -84,6 +84,14 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   const { key, type } = req.body;
 
+  if (!key) {
+    res.status(400).json({
+      success: false,
+      message: 'Key required'
+    })
+    return;
+  }
+
   if (type != 'beneficiary' || type != 'benefactor') {
     res.status(400).json({
       success: false,
@@ -91,6 +99,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     })
     return
   }
+
   try {
     // Fetch existing Redis data
     const data = await client.hGetAll(key);
@@ -98,7 +107,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     if (!data || Object.keys(data).length === 0) {
      res.status(400).json({
         success: false,
-        message: "Wrong or invalid key.",
+        message: "Wrong key.",
       });
       return;
     }
