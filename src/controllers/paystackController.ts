@@ -1,6 +1,5 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-import { paystackIPS } from '../utils/paystack';
 import debtService from '../services/debtServices';
 import { config } from 'dotenv';
 import crypto from 'crypto';
@@ -29,8 +28,11 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
   console.log('Paystack signature:', signature);
 
   if (hash !== signature) {
-    return res.status(401).json({ message: 'Unauthorized: Invalid signature' });
-  }
+    res.status(401).json({ 
+        success: false,
+        message: 'Unauthorized: Invalid signature' });
+        return;
+    }
 
   const event = req.body;  // req.body is already parsed (no need to JSON.parse)
 
@@ -48,7 +50,8 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
     }
     console.log(res);
     
-    return res.status(200).send('OK');
+    res.status(200).send('OK');
+    return;
   }
 
   res.status(200).send('Unhandled event');
