@@ -67,6 +67,7 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
             interestRate: interestRate ? interestRate : 0,
             incentives: incentives,
             accountNumber: accountNumber,
+            bankCode: bankCode,
             bankName: `Debt from ${debtSource}`,
             accountName: accData.data.account_name,
             amount: amount,

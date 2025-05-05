@@ -7,6 +7,7 @@ export interface IDebt extends Document {
   bankName: string,
   note?: string,
   amount: number,
+  bankCode: string,
   statement?: string,
   interestRate: number,
   incentives: number,

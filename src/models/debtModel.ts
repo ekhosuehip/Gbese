@@ -7,6 +7,7 @@ const debtSchema = new Schema({
     accountNumber: { type: String, required: true, trim: true},
     accountName: { type: String, required: true, trim: true},
     bankName: { type: String, required: true, trim: true},
+    bankCode: { type: String, required: true, trim: true},
     note: { type: String, trim: true},
     amount: { type: Number, required: true},
     statement: { type: String},
