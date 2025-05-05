@@ -17,14 +17,14 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
   console.log("Extracted Token:", token);
   
   if (!token) {
-    res.status(401).json({ message: "Unauthorized. Token not provided." });
+    res.status(401).json({ success: false, message: "Unauthorized. Token not provided." });
     console.log("no tokenfound");
     return;
   }
 
   const decoded = jwt.verify(token, secretKey as string) as DecodedUser ;
   if (!decoded) {
-    res.status(401).json({ message: "Invalid token." });
+    res.status(401).json({ success: false, message: "Invalid token." });
     return;
   }
 

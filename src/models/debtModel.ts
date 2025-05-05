@@ -3,7 +3,6 @@ import { Types, Schema, model } from "mongoose";
 
 
 const debtSchema = new Schema({
-    debtId: { type: String, required: true, trim: true},
     user: { type: Types.ObjectId, ref: 'User', required: true },
     accountNumber: { type: String, required: true, trim: true},
     accountName: { type: String, required: true, trim: true},
@@ -14,7 +13,17 @@ const debtSchema = new Schema({
     interestRate: { type: Number, default: 0},
     incentives: { type: Number, required: true},
     dueDate: { type: String, required: true, trim: true},
-    status: { type: String, required: true}
+    status: { type: String, required: true},
+    isListed: { type: Boolean, default: false},
+    transferMethod: {
+    type: String,
+    enum: ['marketplace', 'direct', 'link'],
+    default: null,
+  },
+    isCleared: { type: Boolean, default: false },
+    isTransferred: { type: Boolean, default: false },
+    transferTargets: { type: Types.ObjectId, ref: 'User' },
+    paymentLink: { type: String },
     },
     {timestamps: true, versionKey: false});
 

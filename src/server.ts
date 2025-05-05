@@ -7,6 +7,8 @@ import phoneRouter from './routes/phoneRoutes';
 import bankRouter from './routes/bankRoutes';
 import authRouter from './routes/authroutes';
 import debtRouter from './routes/debtRoutes';
+import paystackRoutes from './routes/paystackRoutes'
+
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 import { connectRedis } from './config/redis';
 
@@ -43,6 +45,8 @@ import { connectRedis } from './config/redis';
   app.use('/api/v2', authRouter);
   app.use('/api/v3', bankRouter);
   app.use('/api/v4', debtRouter);
+  app.use('/api/paystack', paystackRoutes);
+
 
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });

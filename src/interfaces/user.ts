@@ -1,4 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
+import { Types } from "mongoose";
 
 
 export interface IUser {
@@ -14,6 +15,7 @@ export interface IUser {
 }
 
 export interface IAuthPayload {
+  userId: Types.ObjectId,
   fullName: string,
   email: string
 }

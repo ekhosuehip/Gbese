@@ -77,7 +77,7 @@ export const debtSchema = {
       'string.empty': 'Bank code is required.',
     }),
 
-    bankName: Joi.string().trim().required().messages({
+    debtSource: Joi.string().trim().required().messages({
       'string.empty': 'Bank name is required.',
     }),
 

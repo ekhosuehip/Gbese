@@ -1,4 +1,4 @@
-import { RegularAccount, InvestorAccount } from '../models/accountModel';
+import { Account, RegularAccount, InvestorAccount } from '../models/accountModel';
 import { IAccount, IInvestorStats } from '../interfaces/banks';
 
 class AccountServices {
@@ -11,6 +11,10 @@ class AccountServices {
             throw new Error('Invalid account type');
         }
     };
+
+    async fetchAccount (id: object) {
+        return await Account.findById(id)
+    }
 }
 
 const accServices = new AccountServices

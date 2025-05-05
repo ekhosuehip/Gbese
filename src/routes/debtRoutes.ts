@@ -1,6 +1,6 @@
 import express from 'express';
 import { upload } from '../middlewares/multer';
-import { createDebt } from '../controllers/debtcontroller';
+import { createDebt, transferMethod } from '../controllers/debtcontroller';
 import { protect } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/joi';
 import { debtSchema } from '../middlewares/joiSchema'
@@ -70,5 +70,8 @@ router.use(protect)
  *         description: Internal server error
  */
 router.post('/debt/upload', upload.single('statementFile'), validate(debtSchema.createDebtData), createDebt);
+
+router.put('/debt/transfer/:debtId', transferMethod);
+
 
 export default router;
