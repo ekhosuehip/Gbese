@@ -102,7 +102,6 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         const debt = await debtService.fetchDebt(debtId);
         console.log('here');
         
-
         if (!debt) {
             res.status(400).json({
                 success: false,
@@ -120,22 +119,17 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         transferMethod === 'marketplace' && (updateData.isListed = true);
         console.log('there');
         
+        const paymentTransaction = await createPaymentTransaction({
+            email: req.user!.email,
+            amount: debt.amount,
+            metadata: {
+            debtId: debtId,
+            userId: req.user!.userId,
+            },
+        });
 
-        if (transferMethod === 'link' || transferMethod === 'direct') {
-            const paymentTransaction = await createPaymentTransaction({
-                email: req.user!.email,
-                amount: debt.amount,
-                metadata: {
-                debtId: debtId,
-                userId: req.user!.userId,
-                },
-            });
-
-            updateData.paymentLink = paymentTransaction.authorization_url;
-        }
+        updateData.paymentLink = paymentTransaction.authorization_url;
         console.log('now');
-        
-
 
         const updatedDebt = await debtService.updateDebt(debtId, updateData);
 
