@@ -3,14 +3,14 @@ import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import { IDebt } from '../interfaces/debts'
 import banksServices from "../services/bankService";
 import userServices from "../services/userServices";
-import { customAlphabet } from 'nanoid';
+import { createPaymentTransaction } from '../utils/paystack'
 import debtService from "../services/debtServices";
 import { resolveBank } from '../utils/bank';
 import { s3Upload } from '../utils/s3Service';
 
 
 export const createDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-   const {bankCode, bankName, accountNumber, description, amount, dueDate, interestRate, incentives} = req.body
+   const {bankCode, debtSource, accountNumber, description, amount, dueDate, interestRate, incentives} = req.body
    const statementFile = req.file;
    
     const userEmail = req.user!.email;
@@ -48,10 +48,6 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
         });
         return;
         }
-        
-        //Generate random ID 
-        const generateCustomId = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
-        const debtId = generateCustomId();
 
         //Check the status of the debt
         const now = new Date();
@@ -64,15 +60,14 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         const statusLabel = isOverdue ? 'overdue' : 'coming up';
 
-        const newDebt: IDebt = {
-            debtId: debtId,
+        const newDebt = {
             user: user!._id,
             note: description,
             statement: imageUrl,
             interestRate: interestRate ? interestRate : 0,
             incentives: incentives,
             accountNumber: accountNumber,
-            bankName: `Debt from ${bankName}`,
+            bankName: `Debt from ${debtSource}`,
             accountName: accData.data.account_name,
             amount: amount,
             dueDate: dueDate,
@@ -95,3 +90,69 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
     }
     
 }
+
+export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { debtId } = req.params;
+    const { transferMethod } = req.body;
+
+    console.log(transferMethod);
+    
+
+    try {
+        const debt = await debtService.fetchDebt(debtId);
+        console.log('here');
+        
+
+        if (!debt) {
+            res.status(400).json({
+                success: false,
+                message: `No debt matching ID ${debtId} found`
+            });
+            return;
+        }
+
+        // Apply transfer method updates
+        const updateData: Partial<IDebt> = {
+            transferMethod: transferMethod,
+            isTransferred: true
+        };
+
+        transferMethod === 'marketplace' && (updateData.isListed = true);
+        console.log('there');
+        
+
+        if (transferMethod === 'link' || transferMethod === 'direct') {
+            const paymentTransaction = await createPaymentTransaction({
+                email: req.user!.email,
+                amount: debt.amount,
+                metadata: {
+                debtId: debtId,
+                userId: req.user!.userId,
+                },
+            });
+
+            updateData.paymentLink = paymentTransaction.authorization_url;
+        }
+        console.log('now');
+        
+
+
+        const updatedDebt = await debtService.updateDebt(debtId, updateData);
+
+        console.log(updatedDebt);
+        
+
+        res.status(200).json({
+            success: true,
+            message: "Debt transfer method updated",
+            data: updatedDebt
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};

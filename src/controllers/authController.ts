@@ -114,7 +114,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     const user = await userServices.register(newUser);
 
     // Assign coins based on role
-    const gbeseCoins = type === "benefactor" ? 2000 : 3500;
+    const gbeseCoins = type === "beneficiary" ? 500 : 600;
 
     // Create account data
     let accData: IAccount | IInvestorStats;
@@ -133,6 +133,9 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     } else {
       const benefactorAccount: IInvestorStats = {
         _id: user._id,
+        coins: gbeseCoins,
+        accNumber: accountNumber,
+        balance: 0.00,
         type: 'benefactor',
         amountInvested: 0,
         helped: 0,
@@ -147,6 +150,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
     // JWT payload
     const payload: IAuthPayload = {
+      userId: user._id,
       fullName: user.fullName,
       email: user.email
     };
@@ -191,6 +195,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
      return;
     }
 
+    // fetch user account details
+    const accData = await accServices.fetchAccount(user._id)
+    console.log(accData);
+
     // To Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -201,7 +209,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     // To generate JWT
-    const payload: IAuthPayload = {fullName: user.fullName, email: email};
+    const payload: IAuthPayload = {userId: user._id, fullName: user.fullName, email: email};
 
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
 
@@ -214,7 +222,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }).status(200).json({
       success: true,
       message: 'Login successful',
-      name: user.fullName
+      name: user.fullName,
+      Account_Date: accData
     });
   } catch (error) {
     console.error('Login error:', error);

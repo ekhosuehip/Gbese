@@ -28,6 +28,9 @@ const regularAccountSchema = new Schema({
 
 // Investor schema
 const investorSchema = new Schema({
+  coins: { type: Number },
+  accNumber: { type: String },
+  balance: { type: Number, required: true, default: 0.0},
   amountInvested: { type: Number, required: true, default: 0 },
   helped: { type: Number, required: true, default: 0 },
   RIO: { type: Number, required: true, default: 0 }

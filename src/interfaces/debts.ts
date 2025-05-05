@@ -1,16 +1,21 @@
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 
-export interface IDebt {
-  debtId: string;
-  user: Types.ObjectId;
-  accountNumber: string;
-  accountName: string;
-  amount: number;
-  note?: string;
-  bankName: string;
-  interestRate?: number;
-  statement: string;
-  dueDate: string;
-  incentives: number;
-  status: string;
+export interface IDebt extends Document {
+  user: Types.ObjectId,
+  accountNumber: string,
+  accountName: string,
+  bankName: string,
+  note?: string,
+  amount: number,
+  statement?: string,
+  interestRate: number,
+  incentives: number,
+  dueDate: string,
+  status: string,
+  isListed?: boolean,
+  isCleared: boolean,
+  transferMethod?: 'marketplace' | 'direct' | 'link',
+  isTransferred?: boolean,
+  transferTarget?: Types.ObjectId,
+  paymentLink?: string
 }
