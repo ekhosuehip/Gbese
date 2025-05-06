@@ -11,7 +11,6 @@ config();
 const secret = process.env.PAYSTACK_SECRET!;
 
 export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const ip = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress;
 
   // Log the headers to check if 'x-paystack-signature' exists
   console.log('Request headers:', req.headers); 
@@ -51,12 +50,13 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
 
     if (event.event === 'charge.success') {
         const metadata = event.data.metadata;
-        const debtId = metadata?.debtId;
+        const debtId = metadata.debtId;
+        const accId = metadata.userId;
         const amountPaid = event.data.amount / 100;
 
         const debt = await debtService.fetchDebt(debtId);
 
-        const acc = await accServices.fetchAccount(debt!.user);
+        const acc = await accServices.fetchAccount(accId);
         console.log('coins', acc!.coins, debt!.incentives);
         
         const balCoins = acc!.coins - debt!.incentives;
@@ -65,7 +65,7 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
 
         if (debt && debt.amount <= amountPaid) {
           await debtService.updateDebt(debtId, { isCleared: true });
-          const updatedAcc = await accServices.updateAcc(acc!._id, { coins: balCoins})
+          const updatedAcc = await accServices.updateAcc(accId, { coins: balCoins})
           console.log(' Transfer successful:', updatedAcc);
         }
 
