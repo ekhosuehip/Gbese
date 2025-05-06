@@ -15,6 +15,11 @@ class AccountServices {
     async fetchAccount (id: object) {
         return await Account.findById(id)
     }
+
+    //update acc
+    async updateAcc (id: object, date: Partial<IAccount | IInvestorStats>) {
+        return await Account.findByIdAndUpdate(id, date, { new: true })
+    }
 }
 
 const accServices = new AccountServices

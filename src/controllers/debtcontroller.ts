@@ -88,6 +88,7 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
             message: 'Internal server error',
             error: error.message
         })
+        return;
     }
     
 }
@@ -149,5 +150,25 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             message: "Internal server error",
             error: error.message
         });
+        return;
     }
 };
+
+export const listedDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const allDebts = await debtService.fetchListedDebt();
+        res.status(200).json({
+            success: true,
+            message: 'Debts fetched successfully',
+            data: allDebts
+        })
+        return;
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        })
+        return;
+    }
+}

@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import debtService from '../services/debtServices';
+import accServices from '../services/accountServices';
 import { config } from 'dotenv';
 import crypto from 'crypto';
 import { createTransferRecipient, initiateTransfer} from '../utils/paystack'
@@ -48,23 +49,29 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
 
         const debt = await debtService.fetchDebt(debtId);
 
+        const acc = await accServices.fetchAccount(debt!.user)
+        const balCoins = acc!.coins - debt!.incentives
+
         if (debt && debt.amount <= amountPaid) {
-        await debtService.updateDebt(debtId, { isCleared: true });
-       
+          await debtService.updateDebt(debtId, { isCleared: true });
+          
 
-        const recipientCode = await createTransferRecipient(
-            debt.accountName,
-            debt.accountNumber,
-            debt.bankCode
-        );
-
+          const recipientCode = await createTransferRecipient(
+              debt.accountName,
+              debt.accountNumber,
+              debt.bankCode
+          );
 
         const transferResult = await initiateTransfer(amountPaid, recipientCode);
 
         console.log(' Transfer successful:', transferResult);
       }
-
-      res.status(200).send('OK');
+      const updatedAcc = await accServices.updateAcc(acc!._id, { coins: balCoins})
+      res.status(200).json({
+        success: true,
+        message: 'Debt repayment ssuccessful',
+        accData: updatedAcc
+      });
     }
        
   } catch (error) {

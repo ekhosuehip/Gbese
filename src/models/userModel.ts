@@ -9,7 +9,7 @@ const userSchema = new Schema<IUser>({
   dateOfBirth: { type:String, required: true },
   gender: { type: String, required: true, trim: true },
   type: { type: String, required: true},
-  bvn: {type: String, unique: true, trim: true},
+  bvn: {type: String, unique: true, sparse: true, trim: true},
   isKycComplete: { type: Boolean, default: false }
 }, { timestamps: true, versionKey: false });
 
