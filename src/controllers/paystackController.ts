@@ -4,7 +4,7 @@ import debtService from '../services/debtServices';
 import accServices from '../services/accountServices';
 import { config } from 'dotenv';
 import crypto from 'crypto';
-import { createTransferRecipient, initiateTransfer} from '../utils/paystack'
+
 
 config();
 
@@ -21,8 +21,12 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
     const signature = req.headers['x-paystack-signature'] || req.headers['X-Paystack-Signature'];
 
     if (!signature) {
-        return res.status(400).json({ message: 'Missing Paystack signature in the request headers' });
-    }
+        res.status(400).json({ 
+            success: false,
+            message: 'Missing Paystack signature in the request headers'
+          });
+          return;
+        }
 
     const hash = crypto.createHmac('sha512', secret)
         .update(JSON.stringify(req.body))
@@ -34,13 +38,16 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
     if (hash !== signature) {
         res.status(401).json({ 
             success: false,
-            message: 'Unauthorized: Invalid signature' });
-            return;
+            message: 'Unauthorized: Invalid signature' 
+          });
+          return;
         }
 
     const event = req.body; 
 
     console.log("Webhook received:", event.event);
+    console.log('webhook req', event);
+    
 
     if (event.event === 'charge.success') {
         const metadata = event.data.metadata;
@@ -55,29 +62,23 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
         if (debt && debt.amount <= amountPaid) {
           await debtService.updateDebt(debtId, { isCleared: true });
           
+          console.log(' Transfer successful:');
+        }
 
-          const recipientCode = await createTransferRecipient(
-              debt.accountName,
-              debt.accountNumber,
-              debt.bankCode
-          );
-
-        const transferResult = await initiateTransfer(amountPaid, recipientCode);
-
-        console.log(' Transfer successful:', transferResult);
+        const updatedAcc = await accServices.updateAcc(acc!._id, { coins: balCoins})
+        res.status(200).json({
+          success: true,
+          message: 'Debt repayment ssuccessful',
+          accData: updatedAcc
+        });
+        return;
       }
-      const updatedAcc = await accServices.updateAcc(acc!._id, { coins: balCoins})
-      res.status(200).json({
-        success: true,
-        message: 'Debt repayment ssuccessful',
-        accData: updatedAcc
-      });
-    }
        
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({
         success: false,
-        message: 'Internal server error'
+        message: 'Internal server error',
+        error: error.message
     })
   }
 };
