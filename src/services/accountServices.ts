@@ -17,9 +17,15 @@ class AccountServices {
     }
 
     //update acc
-    async updateAcc (id: object, date: Partial<IAccount | IInvestorStats>) {
-        return await Account.findByIdAndUpdate(id, date, { new: true })
-    }
+    async updateAcc(id: object, data: Partial<IAccount | IInvestorStats>) {
+        if (data.type === 'beneficiary') {
+            return await RegularAccount.findByIdAndUpdate(id, data, { new: true });
+        } else if (data.type === 'benefactor') {
+            return await InvestorAccount.findByIdAndUpdate(id, data, { new: true });
+        } else {
+            throw new Error('Invalid account type');
+        }
+    };
 }
 
 const accServices = new AccountServices

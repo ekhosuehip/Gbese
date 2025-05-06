@@ -57,19 +57,21 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
         const debt = await debtService.fetchDebt(debtId);
 
         const acc = await accServices.fetchAccount(accId);
-        console.log('coins', acc!.coins, debt!.incentives);
+        console.log('user account', acc);
+        console.log("Account type:", acc?.type);
         
+        console.log('coins:', acc!.coins, 'incentives:', debt!.incentives);
+      
         const balCoins = acc!.coins - debt!.incentives;
-        console.log(balCoins);
-        
+        console.log("Calculated balCoins:", balCoins);
 
         if (debt && debt.amount <= amountPaid) {
           await debtService.updateDebt(debtId, { isCleared: true });
-          const updatedAcc = await accServices.updateAcc(accId, { coins: balCoins})
-          console.log(' Transfer successful:', updatedAcc);
+          const updatedAcc = await accServices.updateAcc(accId, {type: acc!.type, coins: balCoins });
+
+          console.log('Updated account:', updatedAcc);
         }
 
-        
         res.status(200).send('ok');
         return;
       }
