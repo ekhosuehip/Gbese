@@ -11,7 +11,6 @@ const userSchema = new Schema<IUser>({
   type: { type: String, required: true },
   bvn: { type: String, unique: true, sparse: true, trim: true },
   isKycComplete: { type: Boolean, default: false },
-  isBeneficiator: { type: Boolean, default: false } // ✅ NEW FIELD
 }, { timestamps: true, versionKey: false });
 
 const User = model<IUser>('User', userSchema);
