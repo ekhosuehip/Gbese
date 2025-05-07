@@ -7,7 +7,8 @@ import phoneRouter from './routes/phoneRoutes';
 import bankRouter from './routes/bankRoutes';
 import authRouter from './routes/authroutes';
 import debtRouter from './routes/debtRoutes';
-import paystackRoutes from './routes/paystackRoutes'
+import paystackRoutes from './routes/paystackRoutes';
+import userRoutes from './routes/userRoutes';
 
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 import { connectRedis } from './config/redis';
@@ -46,6 +47,7 @@ import { connectRedis } from './config/redis';
   app.use('/api/v3', bankRouter);
   app.use('/api/v4', debtRouter);
   app.use('/api/paystack', paystackRoutes);
+  app.use('/api/v5', userRoutes);
 
 
   app.use((req, res) => {

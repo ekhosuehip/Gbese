@@ -14,6 +14,11 @@ class UserServices {
         const query = isEmail ? { email: identifier } : { phoneNumber: identifier };
         return await User.findOne(query);
     }
+
+    async fetchAllUsers() {
+        return await User.find({});
+    }
+
   
     // Save the reset token and expiry in Redis
     async saveResetToken(email: string, token: string, expiry: number) {

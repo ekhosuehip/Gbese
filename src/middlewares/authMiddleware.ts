@@ -21,15 +21,18 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
     console.log("no tokenfound");
     return;
   }
-
+  try {
   const decoded = jwt.verify(token, secretKey as string) as DecodedUser ;
   if (!decoded) {
     res.status(401).json({ success: false, message: "Invalid token." });
     return;
   }
 
-  req.user = decoded
+  req.user = decoded;
   
   
   next();
+  } catch (error) {
+    res.status(401).json({ success: false, message: "token verification failed." });
+}
 };
