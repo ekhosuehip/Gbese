@@ -11,6 +11,7 @@ export interface IUser {
   gender: string,
   bvn?: string,
   isKycComplete?: Boolean,
+  isBeneficiator?: Boolean,
   type: 'beneficiary' | 'benefactor',
 }
 
