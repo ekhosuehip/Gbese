@@ -2,6 +2,8 @@ import User from "../models/userModel";
 import {IUser} from '../interfaces/user';
 import { date } from "joi";
 import {client} from "../config/redis";
+import { Account } from "../models/accountModel";
+
 
 class UserServices {
     // Register new user
@@ -80,6 +82,16 @@ class UserServices {
             console.error('Error updating password:', error);
             throw new Error('Could not update password');
         }
+        }
+    
+        // Fetch user account by user ID
+        async fetchUserAccountById(userId: string) {
+            try {
+                return await Account.findById(userId);
+            } catch (error) {
+                console.error('Error fetching user account:', error);
+                throw new Error('Could not fetch user account');
+            }
         }
 };
 
