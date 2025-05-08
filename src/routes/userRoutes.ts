@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(protect);
 
-// Route: GET /api/v5/users/Benefactor
+// Route: GET /api/v5
 router.get('/benefactor',  getBenefactor);
 router.get('/user/account', getUserAccount);
 

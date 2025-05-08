@@ -11,7 +11,7 @@ class TransactionService {
 
     // fetch all transactions belonging to a particular user
     async fetchTransaction(user: string) {
-        return await Transaction.find({ user }).sort({ createdAt: -1 });; 
+        return await Transaction.find({ user }).sort({ updatedAt: -1 });; 
     }
 
     // update transaction
