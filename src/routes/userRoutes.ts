@@ -7,6 +7,6 @@ const router = express.Router();
 router.use(protect);
 
 // Route: GET /api/v5/users/Benefactor
-router.get('/Benefactor',  getBenefactor);
+router.get('/benefactor',  getBenefactor);
 
 export default router;

@@ -2,8 +2,10 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import debtService from '../services/debtServices';
 import accServices from '../services/accountServices';
+import transactionService from '../services/transactionServic';
 import { config } from 'dotenv';
 import crypto from 'crypto';
+import notificationService from '../services/notificationService';
 
 
 config();
@@ -68,9 +70,17 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
         if (debt && debt.amount <= amountPaid) {
           await debtService.updateDebt(debtId, { isCleared: true });
           const updatedAcc = await accServices.updateAcc(accId, {type: acc!.type, coins: balCoins });
+          await transactionService.fetchUpdateTransaction(debtId, { status: 'completed'})
 
           console.log('Updated account:', updatedAcc);
         }
+        await notificationService.createNotification({
+          userId: debt!.user.toString(),
+          title: 'Your Debt Was Paid',
+          message: `Your debt of ₦${debt!.amount} was successfully paid.`,
+          type: 'payment'
+        });
+
 
         res.status(200).send('ok');
         return;
