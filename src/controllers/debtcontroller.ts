@@ -4,6 +4,7 @@ import { IDebt } from '../interfaces/debts';
 import notificationService from '../services/notificationService';
 import transactionService from "../services/transactionServic";
 import userServices from "../services/userServices";
+import statsService from "../services/statsServices";
 import { createPaymentTransaction } from '../utils/paystack'
 import debtService from "../services/debtServices";
 import { resolveBank } from '../utils/bank';
@@ -172,7 +173,11 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             recipient: recipient,
         }
 
+        // const userStats = await statsService.fetchStat(req.user!.userId);
+        // const transfered = userStats.debtTransfers
+
         await transactionService.createTransaction(data)
+        // await statsService.updateStats(userID, {t})
         
 
         res.status(200).json({

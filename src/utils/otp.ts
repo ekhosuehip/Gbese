@@ -6,7 +6,6 @@ dotenv.config();
 
 const apiKey = process.env.OTP_SECRET
 
-const emailConfig = process.env.EMAIL
 
 export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
   const data: IData = {
@@ -24,12 +23,15 @@ export const sendOTP = async (phoneNumber: string): Promise<IOtp | void> => {
   };
 
   try {
+    console.log('Termii API Key:', apiKey);
     const response = await axios.post('https://v3.api.termii.com/api/sms/otp/send', data, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
+    console.log('Termii API Key:', apiKey);
     console.log(response.data);
+
     return response.data
   } catch (error: any) {
     console.error('Error sending OTP:', error.response ? error.response.data : error.message);

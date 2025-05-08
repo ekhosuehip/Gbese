@@ -3,11 +3,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userServices from '../services/userServices';
 import accServices from '../services/accountServices';
+import statsService from '../services/statsServices';
 import { IAuthPayload, IUser } from '../interfaces/user';
 import {client} from "../config/redis";
 import dotenv from 'dotenv';
 import { IAccount, IInvestorStats } from '../interfaces/banks';
 import nodemailer from 'nodemailer';
+import { IStats } from '../interfaces/activities';
 
 dotenv.config();
 
@@ -147,6 +149,16 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     
     // Save account info
     const userAccount = await accServices.createAccount(accData);
+
+    const statsDate: IStats = {
+      user: user._id,
+      debtTransfers: 0,
+      helped: 0,
+      successRate: 0,
+      responseTime: 0,
+      repeatCase: 0
+    }
+    await statsService.createStats(statsDate)
 
     // JWT payload
     const payload: IAuthPayload = {

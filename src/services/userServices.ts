@@ -84,15 +84,6 @@ class UserServices {
         }
         }
     
-        // Fetch user account by user ID
-        async fetchUserAccountById(userId: string) {
-            try {
-                return await Account.findById(userId);
-            } catch (error) {
-                console.error('Error fetching user account:', error);
-                throw new Error('Could not fetch user account');
-            }
-        }
 };
 
 const userServices = new UserServices;

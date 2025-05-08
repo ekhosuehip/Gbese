@@ -1,11 +1,21 @@
 import Stats from '../models/statsModel';
-import { IStats } from '../interfaces/stats';
+import { IStats } from '../interfaces/activities';
 
 
 class StatsService {
-    //get user stats
-    async fetchStats (id: string){
-        return await Stats.findById(id)
+    // fetch all stats belonging to a particular user
+    async fetchStat(statsId: string) {
+        return await Stats.find({ user: statsId }); 
+    }
+
+    // create stats
+    async createStats (data : IStats) {
+        return await Stats.create(data)
+    }
+
+    //update stats
+    async updateStats (statId: string, data: Partial<IStats>) {
+        return await Stats.findByIdAndUpdate(statId, data, {new: true})
     }
 }
 

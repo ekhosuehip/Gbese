@@ -1,5 +1,5 @@
 import { Schema, Types, model} from 'mongoose';
-import { IStats } from '../interfaces/stats';
+import { IStats } from '../interfaces/activities';
 
 const statsSchema = new Schema({
     user: {type: Types.ObjectId, ref: 'User'},

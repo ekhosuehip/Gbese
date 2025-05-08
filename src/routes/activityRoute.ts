@@ -10,3 +10,5 @@ router.get('/notifications', getNotifications);
 
 router.get('/transactions', getTransactions)
 
+
+export default router

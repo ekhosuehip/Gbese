@@ -17,3 +17,12 @@ export interface INotification {
   type: 'debt_transfer' | 'debt_status' | 'payment' | 'fund_account';
 }
 
+
+export interface IStats {
+  user: Types.ObjectId,
+  debtTransfers: number,
+  helped: number,
+  successRate: number,
+  responseTime: number,
+  repeatCase: number
+}
