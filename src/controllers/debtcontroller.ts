@@ -1,12 +1,14 @@
 import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-import { IDebt } from '../interfaces/debts'
-import banksServices from "../services/bankService";
+import { IDebt } from '../interfaces/debts';
+import notificationService from '../services/notificationService';
+import transactionService from "../services/transactionServic";
 import userServices from "../services/userServices";
 import { createPaymentTransaction } from '../utils/paystack'
 import debtService from "../services/debtServices";
 import { resolveBank } from '../utils/bank';
 import { s3Upload } from '../utils/s3Service';
+import { Types } from "mongoose";
 
 
 export const createDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -95,14 +97,14 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 
 export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { debtId } = req.params;
-    const { transferMethod } = req.body;
+    const { transferMethod, receiverId } = req.body;
 
     console.log(transferMethod);
     
 
     try {
+        // fetch dabt
         const debt = await debtService.fetchDebt(debtId);
-        console.log('here');
         
         if (!debt) {
             res.status(400).json({
@@ -118,8 +120,28 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             isTransferred: true
         };
 
-        transferMethod === 'marketplace' && (updateData.isListed = true);
-        console.log('there');
+        let recipient;
+
+        if (transferMethod === 'marketplace') {
+            updateData.isListed = true;
+            recipient = 'marketpalce'
+        }else if ( transferMethod === 'specific') {
+            updateData.transferTarget = receiverId;
+
+            const receiver = await userServices.fetchUserById(receiverId)
+            recipient = receiver?.fullName
+
+            await notificationService.createNotification({
+                userId: receiverId,
+                title: 'New Debt Transferred to You',
+                message: `A debt has been transferred to you for ₦${debt.amount}`,
+                type: 'debt_transfer',
+            });
+        }else {
+            recipient = 'Shared link'
+        }
+
+        
         
         const paymentTransaction = await createPaymentTransaction({
             email: req.user!.email,
@@ -136,6 +158,21 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         const updatedDebt = await debtService.updateDebt(debtId, updateData);
 
         console.log(updatedDebt);
+
+        const userID = new Types.ObjectId(req.user!.userId);
+        const debtID = new Types.ObjectId(debtId);
+
+        const data = {
+            user: userID,
+            debtId: debtID,
+            type:  'transfer_debt',
+            amount: debt.amount,
+            status: 'pending',
+            fundType: 'debit',
+            recipient: recipient,
+        }
+
+        await transactionService.createTransaction(data)
         
 
         res.status(200).json({
@@ -172,3 +209,90 @@ export const listedDebt = async (req: AuthenticatedRequest, res: Response, next:
         return;
     }
 }
+
+export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { debtId } = req.params;
+    const userId = req.user!.userId;
+
+    try {
+        const debt = await debtService.fetchDebt(debtId);
+
+        if (!debt || debt.transferTarget?.toString() !== userId || debt.transferStatus !== 'pending') {
+            res.status(403).json({ 
+                success: false, 
+                message: "Not authorized to accept this debt" 
+            });
+            return;
+        }
+
+        debt.acceptedBy = new Types.ObjectId(userId);
+        debt.transferStatus = 'accepted';
+        await debt.save();
+
+        await notificationService.createNotification({
+            userId: debt.user.toString(),
+            title: 'Your Debt Was Accepted',
+            message: `Your debt of ₦${debt.amount} was accepted by a benefactor.`,
+            type: 'debt_status'
+        });
+
+        await transactionService.fetchUpdateTransaction(debtId, { status: 'accepted'})
+
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Debt accepted", 
+            data: debt 
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Internal server error'
+        })
+    }
+};
+
+export const rejectDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { debtId } = req.params;
+    const userId = req.user!.userId;
+
+    try {
+        const debt = await debtService.fetchDebt(debtId);
+
+        if (!debt || debt.transferTarget?.toString() !== userId || debt.transferStatus !== 'pending') {
+            res.status(403).json({
+                success: false,
+                message: "Not authorized to reject this debt"
+            });
+            return;
+        }
+
+        // Mark debt as declined
+        debt.transferStatus = 'declined';
+        await debt.save();
+
+        // Notify the original user
+        await notificationService.createNotification({
+            userId: debt.user.toString(),
+            title: 'Debt Rejected',
+            message: `Your debt of ₦${debt.amount} was rejected by the intended benefactor.`,
+            type: 'debt_status'
+        });
+
+        await transactionService.fetchUpdateTransaction(debtId, { status: 'rejected'})
+
+        res.status(200).json({
+            success: true,
+            message: "Debt rejected",
+            data: debt
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Internal server error'
+        });
+    }
+};
+
+

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, signUp, userData } from '../controllers/authController';
+import { login, signUp, userData, forgotPassword, resetPassword } from '../controllers/authController';
 import { validate } from '../middlewares/joi';
 import { userSchema } from '../middlewares/joiSchema'
 
@@ -122,6 +122,10 @@ router.post('/signup', signUp);
  *         description: Internal server error
  */
 router.post('/login', login);
+
+router.post('/forgetpassword', forgotPassword);
+
+router.post('/resetpassword', resetPassword)
 
 
 export default router;

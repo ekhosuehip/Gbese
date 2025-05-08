@@ -264,12 +264,15 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
     // Configure Nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // Use your email service provider
+      host: 'mail.gbese.com.ng',
+      port: 465,
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
-      },
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS 
+      }
     });
+
 
     // Send the email
     await transporter.sendMail({

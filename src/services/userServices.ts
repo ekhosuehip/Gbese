@@ -9,6 +9,12 @@ class UserServices {
         return await User.create(data)
     }
 
+    // fetch by id
+    async fetchUserById (id: string) {
+        return await User.findById(id)
+    }
+
+    
     async fetchUser(identifier: string) {
         const isEmail = identifier.includes('@');
         const query = isEmail ? { email: identifier } : { phoneNumber: identifier };
