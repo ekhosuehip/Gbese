@@ -8,6 +8,14 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response,
   const userId = req.user!.userId;
   try {
     const notifications = await notificationService.fetchNotification(userId)
+
+    if (notifications.length < 1) {
+      res.status(200).json({
+        success: true,
+        message: 'No notification found'
+      })
+      return;
+    }
     res.status(200).json({ 
       success: true,
       message: 'Notifications fetched successfully', 
@@ -24,7 +32,16 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response,
 export const getTransactions = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
   try {
+
     const transactions = await transactionService.fetchTransaction(userId);
+
+    if (transactions.length < 1) {
+      res.status(200).json({
+        success: true,
+        message: 'No recent transaction'
+      })
+      return;
+    }
     res.status(200).json({
       success: true,
       message: 'Transactions fetched successfully',
