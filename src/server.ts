@@ -24,11 +24,15 @@ import { connectRedis } from './config/redis';
     .then(() => console.log('Connected to Database'))
     .catch((error) => console.log('Database connection error', error));
 
+  
+  const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+
   // Middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+  app.use(cors({
+    origin: CLIENT_ORIGIN,
+    credentials: true
+  }));
+
 
   app.use(express.json());
   app.use(cookieParser());
