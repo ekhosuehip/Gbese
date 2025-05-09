@@ -178,6 +178,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     }).status(201).json({
       success: true,
       message: 'User registered successfully',
+      token: token,
       name: user.fullName,
       Account_Data: userAccount
     });
@@ -233,6 +234,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       maxAge: 60 * 60 * 1000 
     }).status(200).json({
       success: true,
+      token: token,
       message: 'Login successful',
       name: user.fullName,
       Account_Data: accData
