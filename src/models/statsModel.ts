@@ -8,7 +8,7 @@ const statsSchema = new Schema({
     successRate: {type: Number, default: 0},
     responseTime: {type: Number, default: 0},
     repeatCase: {type: Number, default: 0}
-});
+}, {timestamps: false, versionKey: false});
 
 const Stats = model<IStats>('Stats', statsSchema);
 export default Stats
