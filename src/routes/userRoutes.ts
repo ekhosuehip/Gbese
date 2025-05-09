@@ -4,19 +4,6 @@ import { protect } from '../middlewares/authMiddleware';
 import { getUserAccount } from "../controllers/userController";
 
 const router = express.Router();
-/**
- * @swagger
- * /api/v2/protect:
- *   get:
- *     summary: Protect routes requiring authentication
- *     tags:
- *       - Auth
- *     responses:
- *       401:
- *         description: Unauthorized. Token not provided or invalid
- *       500:
- *         description: Internal server error
- */
 
 router.use(protect);
 /**
@@ -41,7 +28,7 @@ router.get('/benefactor',  getBenefactor);
  *   get:
  *     summary: Get user account details
  *     tags:
- *       - Account
+ *       - User
  *     security:
  *       - bearerAuth: []
  *     responses:
