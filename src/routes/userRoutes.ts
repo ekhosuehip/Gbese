@@ -35,6 +35,38 @@ router.use(protect);
 
 // Route: GET /api/v5
 router.get('/benefactor',  getBenefactor);
+/**
+ * @swagger
+ * /api/v2/account:
+ *   get:
+ *     summary: Get user account details
+ *     tags:
+ *       - Account
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User account fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User account fetched successfully
+ *                 data:
+ *                   type: object
+ *                   description: User account data
+ *       404:
+ *         description: User account not found
+ *       500:
+ *         description: Internal server error
+ */
+
 router.get('/user/account', getUserAccount);
 
 export default router;
