@@ -35,22 +35,6 @@ router.use(protect);
 
 // Route: GET /api/v5
 router.get('/benefactor',  getBenefactor);
-/**
- * @swagger
- * /api/v2/user/account:
- *   get:
- *     summary: Fetch the user's account details
- *     tags:
- *       - User
- *     responses:
- *       200:
- *         description: User account fetched successfully
- *       404:
- *         description: User account not found
- *       500:
- *         description: Internal server error
- */
-
 router.get('/user/account', getUserAccount);
 
 export default router;

@@ -54,7 +54,8 @@ router.get('/notifications', getNotifications);
  *         description: Internal server error
  */
 
-router.get('/transactions', getTransactions)
+router.get('/transactions', getTransactions);
+
 
 
 export default router

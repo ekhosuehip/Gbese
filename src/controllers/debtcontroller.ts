@@ -128,9 +128,15 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             recipient = 'marketpalce'
         }else if ( transferMethod === 'specific') {
             updateData.transferTarget = receiverId;
-
             const receiver = await userServices.fetchUserById(receiverId)
             recipient = receiver?.fullName
+
+            //updating benefactor stats
+            const receiverStats = await statsService.fetchStat(receiverId)
+            if (receiverStats) {
+            receiverStats.debtTransfers += 1;
+            await receiverStats.save(); 
+        }
 
             await notificationService.createNotification({
                 userId: receiverId,
@@ -173,8 +179,15 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             recipient: recipient,
         }
 
-        // const userStats = await statsService.fetchStat(req.user!.userId);
-        // const transfered = userStats.debtTransfers
+        //updating beneficiary stats
+        const userStats = await statsService.fetchStat(req.user!.userId);
+        if (userStats) {
+            userStats.debtTransfers += 1;
+            await userStats.save(); 
+        }
+
+        
+        
 
         await transactionService.createTransaction(data)
         // await statsService.updateStats(userID, {t})
@@ -243,6 +256,15 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         await transactionService.fetchUpdateTransaction(debtId, { status: 'accepted'})
 
+        const userStats = await statsService.fetchStat(req.user!.userId);
+        if (userStats) {
+            userStats.helped += 1;
+            
+            userStats.successRate = userStats.debtTransfers > 0
+                ? ( userStats.debtTransfers / userStats.helped ) * 100 : 0;
+
+            await userStats.save();
+        }
 
         res.status(200).json({ 
             success: true, 
