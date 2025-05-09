@@ -70,8 +70,60 @@ router.use(protect)
  *         description: Internal server error
  */
 router.post('/debt/upload', upload.single('statementFile'), validate(debtSchema.createDebtData), createDebt);
+/**
+ * @swagger
+ * /debt/listed:
+ *   get:
+ *     summary: Fetch all listed debts
+ *     tags:
+ *       - Debt
+ *     responses:
+ *       200:
+ *         description: Debts fetched successfully
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get('/debt/marketplace', listedDebt)
+/**
+ * @swagger
+ * /debt/transfer/{debtId}:
+ *   post:
+ *     summary: Transfer a debt using a selected method
+ *     tags:
+ *       - Debt
+ *     parameters:
+ *       - in: path
+ *         name: debtId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the debt to transfer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - transferMethod
+ *             properties:
+ *               transferMethod:
+ *                 type: string
+ *                 enum: [marketplace, specific, link]
+ *                 description: Method to transfer the debt
+ *                 example: marketplace
+ *               receiverId:
+ *                 type: string
+ *                 description: User ID of the receiver (required if method is 'specific')
+ *     responses:
+ *       200:
+ *         description: Debt transfer method updated
+ *       400:
+ *         description: Invalid debt ID or missing data
+ *       500:
+ *         description: Internal server error
+ */
 
 router.put('/debt/transfer/:debtId', transferMethod);
 

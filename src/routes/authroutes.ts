@@ -122,8 +122,65 @@ router.post('/signup', signUp);
  *         description: Internal server error
  */
 router.post('/login', login);
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request a password reset link via email
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully
+ *       404:
+ *         description: User with this email does not exist
+ *       500:
+ *         description: Internal server error
+ */
 
 router.post('/forgetpassword', forgotPassword);
+/**
+ * @swagger
+ * /auth/reset-password/{token}:
+ *   post:
+ *     summary: Reset user password using the reset token
+ *     tags:
+ *       - Auth
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: JWT reset token sent via email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 example: NewStrongPassword123!
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Internal server error
+ */
 
 router.post('/resetpassword', resetPassword)
 
