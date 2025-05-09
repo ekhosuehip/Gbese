@@ -1,7 +1,8 @@
 import { Schema, model } from 'mongoose';
 import { IUser } from '../interfaces/user';
+import { Types } from 'mongoose';
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema({
   fullName: { type: String, required: true, trim: true },
   email: { type: String, unique: true, required: true, trim: true },
   phoneNumber: { type: String, unique: true, required: true, trim: true },

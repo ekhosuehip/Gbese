@@ -1,8 +1,6 @@
 import User from "../models/userModel";
 import {IUser} from '../interfaces/user';
-import { date } from "joi";
 import {client} from "../config/redis";
-import { Account } from "../models/accountModel";
 
 
 class UserServices {
@@ -41,31 +39,32 @@ class UserServices {
             throw new Error('Could not save reset token');
         }
         }
-        // Verify the reset token
-        async verifyResetToken(email: string, token: string) {
-            try {
-                // Retrieve the token and expiry from Redis
-                const data = await client.hGetAll(email);
-        
-                if (!data || !data.resetToken || !data.resetTokenExpiry) {
-                return null;
-                }
-        
-                // Check if the token matches
-                if (data.resetToken !== token) {
-                return null; 
-                }
-        
-                // Check if the token is expired
-                if (Date.now() > parseInt(data.resetTokenExpiry)) {
-                return null;
-                }
-        
-                return true; 
-            } catch (error) {
-                console.error('Error verifying reset token:', error);
-                throw new Error('Could not verify reset token');
+
+    // Verify the reset token
+    async verifyResetToken(email: string, token: string) {
+        try {
+            // Retrieve the token and expiry from Redis
+            const data = await client.hGetAll(email);
+    
+            if (!data || !data.resetToken || !data.resetTokenExpiry) {
+            return null;
             }
+    
+            // Check if the token matches
+            if (data.resetToken !== token) {
+            return null; 
+            }
+    
+            // Check if the token is expired
+            if (Date.now() > parseInt(data.resetTokenExpiry)) {
+            return null;
+            }
+    
+            return true; 
+        } catch (error) {
+            console.error('Error verifying reset token:', error);
+            throw new Error('Could not verify reset token');
+        }
         }
         
         // Update the user's password

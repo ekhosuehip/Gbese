@@ -235,7 +235,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       success: true,
       message: 'Login successful',
       name: user.fullName,
-      Account_Date: accData
+      Account_Data: accData
     });
   } catch (error) {
     console.error('Login error:', error);

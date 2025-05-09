@@ -4,6 +4,7 @@ import notificationService from "../services/notificationService";
 import transactionService from "../services/transactionServic";
 
 
+
 export const getNotifications = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
   try {

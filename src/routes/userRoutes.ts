@@ -9,6 +9,7 @@ router.use(protect);
 
 // Route: GET /api/v5
 router.get('/benefactor',  getBenefactor);
+
 router.get('/user/account', getUserAccount);
 
 export default router;
