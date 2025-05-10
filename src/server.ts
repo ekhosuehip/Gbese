@@ -25,13 +25,22 @@ import { connectRedis } from './config/redis';
     .catch((error) => console.log('Database connection error', error));
 
   
-  const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+  const allowedOrigins = [
+    process.env.CLIENT_ORIGIN || 'http://localhost:3000'
+  ];
 
   // Middleware
   app.use(cors({
-    origin: CLIENT_ORIGIN,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true
   }));
+
 
 
   app.use(express.json());

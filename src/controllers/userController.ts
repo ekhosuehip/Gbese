@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 
 
 export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    
+
   try {
 
     const stats = await statsService.fetchAllStat();
@@ -49,7 +49,7 @@ export const getUserStats = async (req: AuthenticatedRequest, res: Response, nex
 }
 
 export const getUserAccount = async (req: AuthenticatedRequest, res: Response, next: NextFunction ) => {
-  const userId = new Types.ObjectId(req.user!.userId);
+  const userId = req.user!.userId;
 
   try {
     // Fetch user account details by ID

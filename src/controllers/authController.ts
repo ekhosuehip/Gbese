@@ -208,8 +208,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
      return;
     }
 
+    
     // fetch user account details
-    const accData = await accServices.fetchAccount(user._id)
+    const idAsString = user._id.toString();
+    const accData = await accServices.fetchAccount(idAsString)
     console.log(accData);
 
     // To Compare password

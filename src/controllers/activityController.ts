@@ -2,6 +2,9 @@ import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import notificationService from "../services/notificationService";
 import transactionService from "../services/transactionServic";
+import accServices from "../services/accountServices";
+import userServices from "../services/userServices";
+import { createPaymentTransaction } from '../utils/paystack';
 
 
 
@@ -54,4 +57,19 @@ export const getTransactions = async (req: AuthenticatedRequest, res: Response, 
       message: error.message 
     });
   }
+}
+
+export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { amount } = req.body;
+  const userId = req.user!.userId;
+
+  try {
+    // fetch the user account
+    const user = await accServices.fetchAccount(userId);
+    console.log(user);
+    
+  } catch (error) {
+    
+  }
+
 }

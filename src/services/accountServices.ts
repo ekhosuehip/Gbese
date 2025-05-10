@@ -12,7 +12,7 @@ class AccountServices {
         }
     };
 
-    async fetchAccount (id: object) {
+    async fetchAccount (id: string) {
         return await Account.findById(id)
     }
 

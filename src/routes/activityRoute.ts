@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../middlewares/authMiddleware';
-import { getNotifications, getTransactions} from '../controllers/activityController'
+import { getNotifications, getTransactions, fundAcc} from '../controllers/activityController'
 
 const router = Router()
 /**
@@ -55,6 +55,8 @@ router.get('/notifications', getNotifications);
  */
 
 router.get('/transactions', getTransactions);
+
+router.post('/fund/account', fundAcc)
 
 
 
