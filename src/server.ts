@@ -12,12 +12,11 @@ import userRoutes from './routes/userRoutes';
 import activityRoutes from './routes/activityRoute'
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 import { connectRedis } from './config/redis';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
-
-dotenv.config();
 
 (async () => {
+  dotenv.config();
   await connectRedis();
 
   const app = express();
