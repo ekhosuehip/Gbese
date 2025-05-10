@@ -26,10 +26,10 @@ import { connectRedis } from './config/redis';
 
   
   const allowedOrigins = [
-    process.env.CLIENT_ORIGIN || 'http://localhost:3000'
-  ];
+    'http://localhost:3000',
+    process.env.CLIENT_ORIGIN // e.g. https://gbese.vercel.app
+  ].filter(Boolean); 
 
-  // Middleware
   app.use(cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
@@ -40,8 +40,6 @@ import { connectRedis } from './config/redis';
     },
     credentials: true
   }));
-
-
 
   app.use(express.json());
   app.use(cookieParser());
