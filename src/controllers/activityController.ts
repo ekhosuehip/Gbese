@@ -62,14 +62,42 @@ export const getTransactions = async (req: AuthenticatedRequest, res: Response, 
 export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const { amount } = req.body;
   const userId = req.user!.userId;
+  const email = req.user?.email
 
   try {
-    // fetch the user account
-    const user = await accServices.fetchAccount(userId);
-    console.log(user);
-    
-  } catch (error) {
-    
-  }
 
+    if(!email ){
+      res.status(401).json({
+        sucess: false,
+        message: 'Unauthorized user'
+      })
+    }
+
+    //create payment link
+    const paymentTransaction = await createPaymentTransaction({
+      email: req.user!.email,
+      amount: amount,
+      metadata: {
+          type: 'fund_account',
+          accId: userId
+      }
+    });
+
+    const paymentLink = paymentTransaction.authorization_url
+
+    res.status(200).json({
+      success: true,
+      message: 'Funding link created',
+      data: paymentLink
+    })
+
+
+  } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message
+      });
+      return;
+    }
 }
