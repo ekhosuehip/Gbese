@@ -10,9 +10,12 @@ import debtRouter from './routes/debtRoutes';
 import paystackRoutes from './routes/paystackRoutes';
 import userRoutes from './routes/userRoutes';
 import activityRoutes from './routes/activityRoute'
-
 import { swaggerUi, swaggerSpec } from './docs/swagger';
 import { connectRedis } from './config/redis';
+import * as dotenv from 'dotenv';
+
+
+dotenv.config();
 
 (async () => {
   await connectRedis();
@@ -27,7 +30,7 @@ import { connectRedis } from './config/redis';
   
   const allowedOrigins = [
     'http://localhost:3000',
-    process.env.CLIENT_ORIGIN // e.g. https://gbese.vercel.app
+    process.env.CLIENT_ORIGIN 
   ].filter(Boolean); 
 
   app.use(cors({

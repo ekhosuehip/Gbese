@@ -101,3 +101,8 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
       return;
     }
 }
+
+export const sendMoney = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const userId = req.user!.userId;
+
+}

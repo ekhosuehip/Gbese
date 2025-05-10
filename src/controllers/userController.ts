@@ -3,8 +3,7 @@ import userServices from "../services/userServices";
 import accServices from "../services/accountServices";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import statsService from "../services/statsServices";
-import { Types } from "mongoose";
-
+import { searchBVN, doesNameMatchBVN } from '../utils/bvn';
 
 export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
@@ -75,3 +74,43 @@ export const getUserAccount = async (req: AuthenticatedRequest, res: Response, n
     });
   }
 };
+
+//KYC 
+// export const kyc = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//   const { bvn } = req.body;
+//   // const addressFile = req.file;
+//   const userId = req.user!.userId
+//   console.log(bvn);
+  
+
+//   try {
+//     //fetch user 
+//     const user = await userServices.fetchUserById(userId);
+//     const userBvn = await searchBVN(bvn);
+//     if (!userBvn || userBvn.code != 200){
+//       return res.status(400).json({
+//           success: false,
+//           message: 'Wrong data'
+//         })
+//       }
+
+//     const isLegit = doesNameMatchBVN(user!.fullName, userBvn);
+//     if(!isLegit) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'BVN data does not match user data'
+//       })
+//     }
+//     await userServices.updateProfile(userId, {bvn: bvn})
+//     res.status(200).json({
+//       success: true,
+//       data: userBvn
+//     })
+//     console.log(userBvn);
+    
+//   } catch (error: any) {
+//     res.status(500).json({
+//       error: error.message
+//     })
+//   }
+// }

@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(protect);
 /**
  * @swagger
- * /api/v2/benefactors:
+ * /api/v5/benefactors:
  *   get:
  *     summary: Fetch all users with the role of benefactor
  *     tags:
@@ -24,7 +24,7 @@ router.use(protect);
 router.get('/benefactor',  getBenefactor);
 /**
  * @swagger
- * /api/v2/account:
+ * /api/v5/account:
  *   get:
  *     summary: Get user account details
  *     tags:
@@ -55,5 +55,6 @@ router.get('/benefactor',  getBenefactor);
  */
 
 router.get('/user/account', getUserAccount);
+
 
 export default router;
