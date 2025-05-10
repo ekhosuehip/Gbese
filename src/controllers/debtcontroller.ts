@@ -154,9 +154,9 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             email: req.user!.email,
             amount: debt.amount,
             metadata: {
-            debtId: debtId,
-            userId: req.user!.userId,
-            },
+                type: "debt_payment",
+                debtId: debtId
+            }
         });
 
         updateData.paymentLink = paymentTransaction.authorization_url;
@@ -172,9 +172,9 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         const data = {
             user: userID,
             debtId: debtID,
-            type:  'transfer_debt',
+            type:  'Transfer_debt',
             amount: debt.amount,
-            status: 'pending',
+            status: 'Pending',
             fundType: 'debit',
             recipient: recipient,
         }
@@ -186,13 +186,9 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             await userStats.save(); 
         }
 
-        
-        
-
         await transactionService.createTransaction(data)
         // await statsService.updateStats(userID, {t})
         
-
         res.status(200).json({
             success: true,
             message: "Debt transfer method updated",
@@ -235,10 +231,10 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
     try {
         const debt = await debtService.fetchDebt(debtId);
 
-        if (!debt || debt.transferTarget?.toString() !== userId || debt.transferStatus !== 'pending') {
+        if (!debt ||  debt.transferStatus !== 'pending') {
             res.status(403).json({ 
                 success: false, 
-                message: "Not authorized to accept this debt" 
+                message: "Debt already paid " 
             });
             return;
         }
@@ -254,12 +250,12 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
             type: 'debt_status'
         });
 
-        await transactionService.fetchUpdateTransaction(debtId, { status: 'accepted'})
+        await transactionService.fetchUpdateTransaction(debtId, { status: 'Accepted'})
 
         const userStats = await statsService.fetchStat(req.user!.userId);
         if (userStats) {
             userStats.helped += 1;
-            
+
             userStats.successRate = userStats.debtTransfers > 0
                 ? ( userStats.debtTransfers / userStats.helped ) * 100 : 0;
 
@@ -306,7 +302,7 @@ export const rejectDebt = async (req: AuthenticatedRequest, res: Response, next:
             type: 'debt_status'
         });
 
-        await transactionService.fetchUpdateTransaction(debtId, { status: 'rejected'})
+        await transactionService.fetchUpdateTransaction(debtId, { status: 'Failed'})
 
         res.status(200).json({
             success: true,

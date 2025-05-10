@@ -17,7 +17,7 @@ class AccountServices {
     }
 
     //update acc
-    async updateAcc(id: object, data: Partial<IAccount | IInvestorStats>) {
+    async updateAcc(id: string, data: Partial<IAccount | IInvestorStats>) {
         if (data.type === 'beneficiary') {
             return await RegularAccount.findByIdAndUpdate(id, data, { new: true });
         } else if (data.type === 'benefactor') {

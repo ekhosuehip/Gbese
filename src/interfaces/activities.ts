@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 export interface ITransaction {
   user: Types.ObjectId;
-  debtId: Types.ObjectId;
+  debtId?: Types.ObjectId;
   type: string;
   amount: number;
   status: string;
