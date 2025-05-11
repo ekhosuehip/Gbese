@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import statsService from "../services/statsServices";
 import { searchBVN, doesNameMatchBVN } from '../utils/bvn';
 
+
 export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
   try {
@@ -73,7 +74,11 @@ export const getUserAccount = async (req: AuthenticatedRequest, res: Response, n
       message: error.message || "Internal server error",
     });
   }
+  
 };
+
+
+
 
 //KYC 
 // export const kyc = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

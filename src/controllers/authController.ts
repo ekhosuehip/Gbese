@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import { IAccount, IInvestorStats } from '../interfaces/banks';
 import nodemailer from 'nodemailer';
 import { IStats } from '../interfaces/activities';
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 dotenv.config();
 
@@ -343,6 +344,58 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     });
   } catch (error) {
     console.error('Reset Password Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+
+};
+
+// change password
+export const changePassword = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const userId = req.user!.userId;
+
+  try {
+    // Check if newPassword and confirmPassword match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password and confirm password do not match',
+      });
+    }
+
+    // Fetch the user by ID
+    const user = await userServices.fetchUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Compare the current password with the stored hashed password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect',
+      });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password using updateData
+    await userServices.updateData(userId, { password: hashedPassword });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    console.error('Change Password Error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',

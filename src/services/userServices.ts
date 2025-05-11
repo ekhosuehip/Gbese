@@ -25,6 +25,11 @@ class UserServices {
         return await User.find({});
     }
 
+    //change password
+    async updateData (id: string, data: Partial<IUser>) {
+        return await User.findByIdAndUpdate(id, data, {new: true});
+    }
+
     // Update file
     async updateProfile (id: string, data: Partial<IUser>) {
         return await User.findByIdAndUpdate(id, data, {new: true});

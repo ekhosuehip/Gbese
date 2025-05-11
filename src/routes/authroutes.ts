@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { login, signUp, userData, forgotPassword, resetPassword } from '../controllers/authController';
+import { login, signUp, userData, forgotPassword, resetPassword, changePassword } from '../controllers/authController';
 import { validate } from '../middlewares/joi';
 import { userSchema } from '../middlewares/joiSchema'
+import { protect } from '../middlewares/authMiddleware';
+
 
 const router = Router();
+
+
 
 /**
  * @swagger
@@ -183,6 +187,7 @@ router.post('/forgetpassword', forgotPassword);
  */
 
 router.post('/resetpassword', resetPassword)
+router.post('/changepassword', changePassword);
 
 
 export default router;
