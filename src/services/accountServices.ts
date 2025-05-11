@@ -1,5 +1,7 @@
 import { Account, RegularAccount, InvestorAccount } from '../models/accountModel';
 import { IAccount, IInvestorStats } from '../interfaces/banks';
+import { isValidObjectId } from 'mongoose';
+
 
 class AccountServices {
     async createAccount (data: IAccount | IInvestorStats) {
@@ -12,9 +14,19 @@ class AccountServices {
         }
     };
 
-    async fetchAccount (id: string) {
-        return await Account.findById(id)
-    }
+    async fetchAccount(identifier: string) {
+        let query;
+
+        if (/^\d{10,15}$/.test(identifier)) {
+            query = { phoneNumber: identifier };
+        } else if (isValidObjectId(identifier)) {
+            query = { _id: identifier };
+        } else {
+            throw new Error('Invalid identifier. Must be a phone number or valid user ID.');
+        }
+
+        return await Account.findOne(query);
+        }
 
     //update acc
     async updateAcc(id: string, data: Partial<IAccount | IInvestorStats>) {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../middlewares/authMiddleware';
-import { getNotifications, getTransactions, fundAcc} from '../controllers/activityController'
+import { getNotifications, getTransactions, fundAcc, sendMoneyInternal, sendMoneyExternalData ,sendMoneyExternal} from '../controllers/activityController'
 
 const router = Router()
 /**
@@ -58,6 +58,11 @@ router.get('/transactions', getTransactions);
 
 router.post('/fund/account', fundAcc)
 
+router.post('/send/internal', sendMoneyInternal);
+
+router.post('/send/external', sendMoneyExternal)
+
+router.post('/send/external/data', sendMoneyExternalData)
 
 
 export default router

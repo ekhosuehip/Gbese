@@ -7,7 +7,7 @@ import userServices from "../services/userServices";
 import statsService from "../services/statsServices";
 import { createPaymentTransaction } from '../utils/paystack'
 import debtService from "../services/debtServices";
-import { resolveBank } from '../utils/bank';
+import { resolveBank } from '../utils/paystack';
 import { s3Upload } from '../utils/s3Service';
 import { Types } from "mongoose";
 
