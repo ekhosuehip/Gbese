@@ -85,12 +85,12 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
 
           await transactionService.createTransaction(transactionData);
 
-         await notificationService.createNotification({
-            userId: accId,
-            title: 'Account funded.',
-            message: `Your account was funded with ₦${amountPaid}.`,
-            type: 'fund_account'
-          });
+          await notificationService.createNotification({
+              userId: accId,
+              title: 'Account funded.',
+              message: `Your account was funded with ₦${amountPaid}.`,
+              type: 'fund_account'
+            });
 
           break;
         }

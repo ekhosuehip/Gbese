@@ -8,9 +8,12 @@ class BanksService {
     }
 
     // Fetch specific bank
-    async fetchBank(bankName: string){
-        return await Bank.findOne({name: bankName}, { _id: 0 })
+    async fetchBank(identifier: string) {
+        const isCode = /^\d+$/.test(identifier);
+        const query = isCode ? { code: identifier } : { name: identifier };
+        return await Bank.findOne(query, { _id: 0 });
     }
+
 };
 
 const banksServices = new BanksService;
