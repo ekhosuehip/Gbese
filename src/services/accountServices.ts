@@ -14,18 +14,12 @@ class AccountServices {
         }
     };
 
-    async fetchAccount(identifier: string) {
-        let query;
+    async fetchAllAcc () {
+        return await Account.find({}).populate('user', 'fullName')
+    }
 
-        if (/^\d{10,15}$/.test(identifier)) {
-            query = { phoneNumber: identifier };
-        } else if (isValidObjectId(identifier)) {
-            query = { _id: identifier };
-        } else {
-            throw new Error('Invalid identifier. Must be a phone number or valid user ID.');
-        }
-
-        return await Account.findOne(query);
+    async fetchAccount(id: string) {
+        return await Account.findById(id);
         }
 
     //update acc

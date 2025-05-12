@@ -10,12 +10,16 @@ export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, n
   try {
 
     const stats = await statsService.fetchAllStat();
+    const accounts = await accServices.fetchAllAcc();
+    const benefactorsAcc = accounts.filter(acc => acc.type === 'benefactor');
+
     console.log(stats);
     
     res.status(200).json({
       success: true,
       message: 'Benefactors fetched successfully',
-      data: stats
+      data: stats,
+      acc: benefactorsAcc,
     })
   } catch (error: any) {
     res.status(500).json({ 
@@ -61,6 +65,26 @@ export const getUserAccount = async (req: AuthenticatedRequest, res: Response, n
       });
       return;
     }
+
+    res.status(200).json({
+      success: true,
+      message: "User account fetched successfully",
+      data: userAccount,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const allUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction ) => {
+  const userId = req.user!.userId;
+
+  try {
+    // Fetch user account details by ID
+    const userAccount = await userServices.fetchAllUsers();
 
     res.status(200).json({
       success: true,

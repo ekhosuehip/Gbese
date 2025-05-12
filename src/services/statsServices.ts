@@ -10,7 +10,8 @@ class StatsService {
 
     // fetch all stats belonging to a particular user
     async fetchAllStat() {
-        const stats = await Stats.find({}).populate('user', 'fullName type');
+        const stats = await Stats.find({})
+        .populate('user', 'fullName type').populate('account')
         return stats.filter(stat => stat.user && (stat.user as any).type === 'benefactor');
     }
 
