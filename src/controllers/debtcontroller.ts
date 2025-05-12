@@ -179,7 +179,7 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             recipient: recipient,
         }
 
-        //updating beneficiary stats
+        //update beneficiary stats
         const userStats = await statsService.fetchStat(req.user!.userId);
         if (userStats) {
             userStats.debtTransfers += 1;
@@ -187,7 +187,6 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         }
 
         await transactionService.createTransaction(data)
-        // await statsService.updateStats(userID, {t})
         
         res.status(200).json({
             success: true,

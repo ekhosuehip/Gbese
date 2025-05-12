@@ -105,29 +105,89 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
     }
 }
 
-export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const userId = req.user!.userId;
-  const { amount, note } = req.body;
-  const { receiverId } = req.params
+export const sendMoneyInternalData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { amount, accNumber, note } = req.body;
 
   try {
     // convert amount input to number
-    const amountToINumber = parseFloat(amount)
+    const rawAmount = Number(amount);
+    const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
+
     // fetch receiver
-    const receiver = await accServices.fetchAccount(receiverId);
+    const receiver = await userServices.fetchUser('234'+accNumber);
+    if(!receiver){
+      return res.status(400).json({
+        success: false,
+        message: 'Wrong account number'
+      })
+    }
+
+  
+    const formattedDate = dayjs().format('MMMM D, YYYY');
+
+    const year = new Date().getFullYear();
+    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    const reference = `INV-EXT-${year}-${randomDigits}`;
     
-    if (!receiver) {
+    console.log(reference);
+
+    console.log(formattedDate);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Transaction details',
+      data: {
+        to: receiver.fullName,
+        date: formattedDate,
+        amount: amount,
+        bank: 'Gbese',
+        reference: reference,
+        fee: '#00.00',
+        total: `#${amountToNumber}`
+      }
+    })
+    
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    })
+  }
+
+}
+
+export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const userId = req.user!.userId;
+  const { amount, accNumber ,note } = req.body;
+
+  try {
+    // convert amount input to number
+    const rawAmount = Number(amount);
+    const amountToNumber = parseFloat(rawAmount.toFixed(2));
+    console.log(accNumber);
+    
+
+    // fetch receiver
+    const receiverData = await userServices.fetchUser('234'+accNumber);
+    
+    console.log(receiverData);
+    
+    if (!receiverData) {
       return res.status(400).json({
         success: false,
         message: 'Invalid receiver details'
       })
     }
 
-    const receiverData = await userServices.fetchUser(receiver.accNumber);
+    const receiver = await accServices.fetchAccount(receiverData._id.toHexString());
+    console.log(receiver);
+
+
 
     // fetch user account data
     const user = await accServices.fetchAccount(userId);
-    if (user!.balance < amountToINumber) {
+    if (user!.balance < amountToNumber) {
       return res.status(409).json({
         success: false,
         message: 'Insufficient funds'
@@ -136,9 +196,9 @@ export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response
 
     const userData = await userServices.fetchUserById(userId);
 
-    const userBal = user!.balance - amountToINumber;
+    const userBal = user!.balance - amountToNumber;
     const userCoins = user!.coins + 5;
-    const receiverBal = receiver!.balance + amountToINumber;
+    const receiverBal = receiver!.balance + amountToNumber;
     const receiverCoins = receiver!.coins + 2;
 
     await accServices.updateAcc(userId, {type: user!.type, balance: userBal, coins: userCoins});
@@ -146,31 +206,31 @@ export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response
     await notificationService.createNotification({
       userId: userId,
       title: 'Transfer',
-      message: `Your transfer of #${amountToINumber} to ${receiverData?.fullName} was successful`,
+      message: `Your transfer of #${amountToNumber} to ${receiverData?.fullName} was successful`,
       type: 'payment'
     })
 
     await transactionService.createTransaction({
       user: user!._id,
-      amount: amountToINumber,
+      amount: amountToNumber,
       type: 'Transfer',
       status: 'complete',
       fundType: 'DEBIT',
       recipient: receiverData?.fullName
     })
     
-    await accServices.updateAcc(receiverId, {type: receiver.type ,balance: receiverBal, coins: receiverCoins});
+    await accServices.updateAcc(receiver!._id.toHexString(), {type: receiver!.type ,balance: receiverBal, coins: receiverCoins});
     
     await notificationService.createNotification({
-      userId: receiverId,
+      userId: receiver!._id.toHexString(),
       title: 'Transfer',
-      message: `Your account have been credited with #${amountToINumber} by ${userData?.fullName}`,
+      message: `Your account have been credited with #${amountToNumber} by ${userData?.fullName}`,
       type: 'fund_account'
     })
 
     await transactionService.createTransaction({
       user: receiverData!._id,
-      amount: amountToINumber,
+      amount: amountToNumber,
       type: 'Receive',
       status: 'Complete',
       fundType: 'CREDIT',
@@ -198,7 +258,11 @@ export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Resp
   try {
     // convert amount input to number
     const rawAmount = Number(amount);
-    const amountToNumber = parseFloat(rawAmount.toFixed(2));
+    const amountWithCharge = rawAmount + 50
+    const amountToNumber = (Number.isInteger(amountWithCharge) ? (amountWithCharge + ".00") : amountWithCharge.toString());
+
+    
+  console.log(amountToNumber);
   
     // fetch bank data
     const bankData = await banksServices.fetchBank(bankName);
@@ -220,8 +284,7 @@ export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Resp
         });
       }
    
-    
-    const amountWithCharge = amountToNumber + 50.00;
+  
     const formattedDate = dayjs().format('MMMM D, YYYY');
 
     const year = new Date().getFullYear();
@@ -242,7 +305,7 @@ export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Resp
         bank: bankName,
         reference: reference,
         fee: '#50.00',
-        total: `#${amountWithCharge}`
+        total: `#${amountToNumber}`
       }
     })
     
@@ -258,12 +321,15 @@ export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Resp
 
 export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
-  const { totalAmount, bankName, accNumber, accName, reference } = req.body;
+  const { amount, bankName, accNumber, accName, reference } = req.body;
 
   try {
     // convert amount input to number
-    const amountToNumber = parseFloat(totalAmount);
-
+    const rawAmount = Number(amount);
+    const amountWithCharge = rawAmount + 50
+    const amountToNumber = parseFloat(amountWithCharge.toFixed(2));
+    console.log(amountToNumber);
+    
     // fetch user account data
     const user = await accServices.fetchAccount(userId);
 
@@ -317,13 +383,128 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL,
       subject: 'Transfer Initiated',
-      html: `<p>Transfer has been initiated to <strong>${accName} ${accNumber} ${bankName}</strong>. by ${user!.accNumber}</p>`
+      html: `<p>Transfer has been initiated to <strong>${accName}, ${accNumber} ${bankName}</strong>. by ${user!.accNumber}</p>`
 
     });
 
     return res.status(200).json({
       success: true,
       message: 'Transfer successful'
+    })
+    
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    })
+  }
+
+}
+
+export const requestMoneyData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { amount, purpose, dueDate, note} = req.body;
+  const { receiverId } = req.params;
+
+  try {
+    const receiver = await userServices.fetchUserById(receiverId)
+    if (!receiver) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalind receiver Id'
+      })
+    }
+
+    // convert amount input to number
+    const rawAmount = Number(amount);
+    const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
+
+    const year = new Date().getFullYear();
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    const reference = `INV-EXT-${year}-${randomDigits}`;
+
+    const formattedDate = dayjs(dueDate).format("MMMM D, YYYY");
+    return res.status(200).json({
+      success: true,
+      message: 'Review Request',
+      data: {
+        to: receiver.fullName,
+        dueDate: formattedDate,
+        amount: `#${amountToNumber}`,
+        description: purpose,
+        refrence: reference
+      }
+    })
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    })
+  }
+}
+
+export const requestMoney = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const userId = req.user!.userId;
+  const { amount, purpose, dueDate, reference } = req.body;
+  const { receiverId } = req.params;
+
+  try {
+    // convert amount input to number
+    const rawAmount = Number(amount);
+    const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
+
+
+    // fetch receiver
+    const receiverData = await userServices.fetchUserById(receiverId);
+    
+    console.log(receiverData);
+    
+    if (!receiverData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid receiver details'
+      })
+    }
+
+
+    const userData = await userServices.fetchUserById(userId);
+
+    await notificationService.createNotification({
+      userId: userId,
+      title: 'Request',
+      message: `You requested #${amountToNumber} from ${receiverData.fullName} for ${purpose}`,
+      type: 'debt_status'
+    })
+
+    await transactionService.createTransaction({
+      user: userData!._id,
+      amount: parseFloat(amountToNumber),
+      type: 'Transfer',
+      status: 'Pending',
+      fundType: 'DEBIT',
+      recipient: receiverData?.fullName
+    })
+    
+    await notificationService.createNotification({
+      userId: receiverId,
+      title: 'Transfer',
+      message: `${userData?.fullName} hsd requested #${amountToNumber} from you`,
+      type: 'payment'
+    })
+
+    await transactionService.createTransaction({
+      user: receiverData!._id,
+      amount: parseFloat(amountToNumber),
+      type: 'Receive',
+      status: 'Pending',
+      fundType: 'DEBIT',
+    })
+
+    return res.status(200).json({
+      success: true,
+      message: 'Request successful'
     })
     
   } catch (error: any) {
