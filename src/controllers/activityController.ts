@@ -335,7 +335,7 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
 
     
       
-    if (user!.balance < amountToNumber) {
+    if (user!.balance < amountWithCharge) {
       return res.status(409).json({
         success: false,
         message: 'Insufficient funds'
@@ -344,7 +344,7 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
     console.log("funds");
     
 
-    const userBal = user!.balance - amountToNumber;
+    const userBal = user!.balance - amountWithCharge;
     const userCoins = user!.coins + 5;
 
     await accServices.updateAcc(userId, {type: user!.type, balance: userBal, coins: userCoins});
