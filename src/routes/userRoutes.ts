@@ -1,7 +1,7 @@
 import express from 'express';
 import { getBenefactor } from '../controllers/userController';
 import { protect } from '../middlewares/authMiddleware';
-import { getUserAccount , allUser} from "../controllers/userController";
+import { getUserAccount , allUser, getUserStats} from "../controllers/userController";
 
 const router = express.Router();
 
@@ -58,5 +58,6 @@ router.get('/user/account', getUserAccount);
 
 router.get('/all/account', allUser);
 
+router.get('/user/stat',  getUserStats);
 
 export default router;

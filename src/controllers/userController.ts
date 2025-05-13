@@ -33,11 +33,11 @@ export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, n
 export const getUserStats = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const userId = req.user!.userId
 
-    try {
-        
+    try {   
         //get user stats
-        const stats = await statsService.fetchStat(userId)
-
+        const stats = await statsService.fetchStat(userId);
+        console.log(stats);
+        
         return res.status(200).json({
             success: true,
             message: 'Stats fetched successfully',
