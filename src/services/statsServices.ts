@@ -4,8 +4,8 @@ import { IStats } from '../interfaces/activities';
 
 class StatsService {
     // fetch all stats belonging to a particular user
-    async fetchStat(id: string) {
-        return await Stats.findById(id); 
+    async fetchStat(user: string) {
+        return await Stats.findOne({user}); 
     }
 
     // fetch all stats belonging to a particular user
