@@ -15,14 +15,14 @@ export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, n
 
     console.log(stats);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Benefactors fetched successfully',
       data: stats,
       acc: benefactorsAcc,
     })
   } catch (error: any) {
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
       message: error.message || 'Internal server error'
     });
@@ -38,13 +38,13 @@ export const getUserStats = async (req: AuthenticatedRequest, res: Response, nex
         //get user stats
         const stats = await statsService.fetchStat(userId)
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Stats fetched successfully',
             data: stats
         })
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Internal server error'
         })
@@ -59,20 +59,19 @@ export const getUserAccount = async (req: AuthenticatedRequest, res: Response, n
     const userAccount = await accServices.fetchAccount(userId);
 
     if (!userAccount) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: "User account not found",
       });
-      return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "User account fetched successfully",
       data: userAccount,
     });
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Internal server error",
     });
@@ -86,13 +85,13 @@ export const allUser = async (req: AuthenticatedRequest, res: Response, next: Ne
     // Fetch user account details by ID
     const userAccount = await userServices.fetchAllUsers();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "User account fetched successfully",
       data: userAccount,
     });
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Internal server error",
     });

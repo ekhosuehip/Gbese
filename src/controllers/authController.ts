@@ -24,22 +24,20 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
     
 
     if (!data || Object.keys(data).length === 0) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: "Wrong or invalid key.",
       });
-      return;
     }
 
     // Check if email already exists 
     const existingUser = await userServices.fetchUser(email);
 
     if (existingUser) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: "User already exists with this email.",
       });
-      return;
     }
 
     // Hash the password
@@ -65,7 +63,7 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
 
     console.log(`User data saved successfully for key: ${key}`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'continue registration',
       key: key
@@ -73,11 +71,10 @@ export const userData = async (req: Request, res: Response, next: NextFunction) 
 
   } catch (error) {
     console.error('Sign-up error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal server error.",
     });
-    return;
   }
 };
 
@@ -91,11 +88,10 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     const data = await client.hGetAll(key);
 
     if (!data || Object.keys(data).length === 0) {
-     res.status(400).json({
+     return res.status(400).json({
         success: false,
         message: "Wrong key.",
       });
-      return;
     }
 
     console.log(data);
@@ -170,7 +166,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
 
     // Set token cookie and return response
-    res.cookie('token', token, {
+    return res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -185,7 +181,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
   } catch (error: any) {
     console.error('Signup error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error',
       error: error.message
@@ -202,10 +198,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // To check if user exists
     const user = await userServices.fetchUser(email);
     if (!user) {
-     res.status(400).json({ 
+     return res.status(400).json({ 
           success: false, 
           message: 'Invalid credentials' });
-     return;
     }
 
     
@@ -217,10 +212,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     // To Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false, 
         message: 'Invalid credentials' });
-      return;
     }
 
     // To generate JWT
@@ -229,7 +223,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1hr' });
 
     // To set the token in a cookie
-    res.cookie('token', token, {
+    return res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // To secure only in productions
       sameSite: 'strict',
@@ -243,10 +237,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false, 
       message: 'Internal server error' });
-    return;
   }
 };
   

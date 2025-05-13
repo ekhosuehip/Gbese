@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction} from 'express';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import banksServices from '../services/bankService';
+import { resolveBank } from '../utils/paystack'
 
 
 
@@ -32,36 +34,64 @@ export const fetchBank = async (req: Request, res: Response, next: NextFunction)
     const name = req.query.bank as string;
     
     if(!name){
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             message: 'Bank name needed as quary params'
         })
-        return;
     }
 
     try {
         const bankName = name.toUpperCase();
         const bank = await banksServices.fetchBank(bankName);
         if (!bank){
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: ' Invalid bank name'
             })
-            return;
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Bank fetched successfully',
             data: bank
         });
-        return;
+
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: 'Internal server error',
             error: error 
         });
-        return;
+    }
+}
+
+export const resolveBankDetails = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const {accNumber, bankCode} = req.body;
+
+    try {
+        const accData = await resolveBank(accNumber, bankCode);
+        //Verify account data
+        
+        if (!accData || accData.status !== true) {
+            return res.status(400).json({
+                success: false,
+                message: 'Account not found',
+            });
+            }
+        const name = accData.data.account_name;
+        return res.status(200).json({
+            success: true,
+            message: 'Account resolved successfully',
+            data: {
+                accName: name,
+                accNumber: accNumber
+            }
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        })
     }
 }

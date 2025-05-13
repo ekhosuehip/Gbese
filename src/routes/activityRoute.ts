@@ -4,10 +4,11 @@ import { getNotifications,
         getTransactions, 
         fundAcc, 
         sendMoneyInternal, 
-        sendMoneyInternalData, 
-        sendMoneyExternalData,
         sendMoneyExternal,
-        requestMoneyData} from '../controllers/activityController'
+        requestMoney,
+        acceptRequest,
+        rejectRequest,
+        getRequests} from '../controllers/activityController'
 
 const router = Router()
 /**
@@ -63,17 +64,19 @@ router.get('/notifications', getNotifications);
 
 router.get('/transactions', getTransactions);
 
+router.get('/requests', getRequests)
+
 router.post('/fund/account', fundAcc)
 
 router.post('/send/internal', sendMoneyInternal);
 
-router.post('/send/internal/data', sendMoneyInternalData)
+router.post('/send/external', sendMoneyExternal);
 
-router.post('/send/external', sendMoneyExternal)
+router.post('/request/data/:receiverId', requestMoney);
 
-router.post('/send/external/data', sendMoneyExternalData)
+router.post('/request/accept/:requestId', acceptRequest);
 
-router.post('/request/data/:receiverId', requestMoneyData)
+router.post('/request/reject/:requestId', rejectRequest);
 
 
 export default router
