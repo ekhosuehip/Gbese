@@ -26,7 +26,7 @@ const debtSchema = new Schema({
     transferTarget: { type: Types.ObjectId, ref: 'User' },
     transferStatus: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' },
     acceptedBy: { type: Types.ObjectId, ref: 'User', default: null },
-    paymentLink: { type: String },
+    paymentLink: { type: String, default: null },
     },
     {timestamps: true, versionKey: false});
 

@@ -18,7 +18,7 @@ export interface IDebt extends Document {
   transferMethod?: 'marketplace' | 'direct' | 'link',
   isTransferred?: boolean,
   transferTarget?: Types.ObjectId,
-  transferStatus?: 'pending' | 'accepted' | 'declined',
+  transferStatus?: 'pending' | 'accepted' | 'rejected',
   acceptedBy?: Types.ObjectId,
   paymentLink?: string
 }

@@ -14,21 +14,19 @@ export const userIdentity = async (req: Request, res: Response, next: NextFuncti
       const existingUser = await userServices.fetchUser(phoneNumber);
 
       if (existingUser) {
-        res.status(400).json({
+        return res.status(400).json({
           success: false,
           message: 'Phone number already registered'
         })
-        return
       }
       // Send OTP
       const otpResponse = await sendOTP(phoneNumber);
 
       if (!otpResponse || !otpResponse.pinId) {
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           message: "Failed to send OTP.",
         });
-        return;
       }
 
       //Generate random ID 
@@ -49,20 +47,17 @@ export const userIdentity = async (req: Request, res: Response, next: NextFuncti
       pipeline.expire(redisId, 600); // expires in 10 minutes
       await pipeline.exec();
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "OTP sent successfully",
         key: redisId
       });
-      return;
-
   } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "An error occurred while sending OTP.",
         error: error.response?.data || error.message
       });
-      return;
   }
 };
 
@@ -78,20 +73,18 @@ export const verifyNumber = async (req: Request, res: Response, next: NextFuncti
     console.log("Keys:", Object.keys(data));
     
     if (!data || Object.keys(data).length === 0) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: "OTP session not found or expired.",
       });
-      return;
     }
 
     const attempts = parseInt(data.attempts || "0");
     if (attempts >= 5) {
-      res.status(429).json({
+      return res.status(429).json({
         success: false,
         message: "Too many incorrect attempts. OTP verification blocked. Try in 10 mins",
       });
-      return;
     }
 
     const verify = await verifyOTP(data.otpId, otp);
@@ -100,26 +93,23 @@ export const verifyNumber = async (req: Request, res: Response, next: NextFuncti
       const newAttempts = attempts + 1;
       await client.hSet(key, { attempts: newAttempts.toString() });
 
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: `Invalid or Expired OTP. Attempt ${newAttempts} of 5.`,
       });
-      return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "OTP verified successfully.",
       key: key
     });
-    return;
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "An error occurred during verification.",
       error: error.response?.data || error.message,
     });
-    return;
   }
 };
 

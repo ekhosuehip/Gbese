@@ -10,31 +10,31 @@ import debtService from "../services/debtServices";
 import { resolveBank } from '../utils/paystack';
 import { s3Upload } from '../utils/s3Service';
 import { Types } from "mongoose";
+import accServices from "../services/accountServices";
+import nodemailer from 'nodemailer';
 
 
 export const createDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
    const {bankCode, debtSource, accountNumber, description, amount, dueDate, interestRate, incentives} = req.body
    const statementFile = req.file;
    
-    const userEmail = req.user!.email;
+    const userId= req.user!.userId;
     
     if (!statementFile) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             message: 'Statement file is required',
         });
-        return;
     }
     try {
 
-        const user = await userServices.fetchUser(userEmail);
+        const user = await userServices.fetchUserById(userId);
 
         if (!user) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'login again token expired'
             })
-            return;
         }
 
         const imageUrl = await s3Upload(statementFile);
@@ -45,11 +45,10 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
         console.log(accData);
 
         if (!accData || accData.status !== true) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             message: 'Account not found',
         });
-        return;
         }
 
         //Check the status of the debt
@@ -80,18 +79,17 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         const createdDebt = await debtService.createDebt(newDebt);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Debt create successfully',
             data: createdDebt
         })
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: 'Internal server error',
             error: error.message
         })
-        return;
     }
     
 }
@@ -99,6 +97,7 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { debtId } = req.params;
     const { transferMethod, receiverId } = req.body;
+    const userId = req.user!.userId
 
     console.log(transferMethod);
     
@@ -106,13 +105,14 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
     try {
         // fetch dabt
         const debt = await debtService.fetchDebt(debtId);
+
+        const user = await userServices.fetchUserById(userId);
         
         if (!debt) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: `No debt matching ID ${debtId} found`
             });
-            return;
         }
 
         // Apply transfer method updates
@@ -122,11 +122,9 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
         };
 
         let recipient;
+        let paymentTransaction;
 
-        if (transferMethod === 'marketplace') {
-            updateData.isListed = true;
-            recipient = 'marketpalce'
-        }else if ( transferMethod === 'specific') {
+        if (transferMethod === 'specific') {
             updateData.transferTarget = receiverId;
             const receiver = await userServices.fetchUserById(receiverId)
             recipient = receiver?.fullName
@@ -135,22 +133,18 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             const receiverStats = await statsService.fetchStat(receiverId)
             if (receiverStats) {
             receiverStats.debtTransfers += 1;
-            await receiverStats.save(); 
-        }
+            await receiverStats.save(); }
 
             await notificationService.createNotification({
                 userId: receiverId,
                 title: 'New Debt Transferred to You',
-                message: `A debt has been transferred to you for ₦${debt.amount}`,
+                message: `A debt of ₦${debt.amount} has been transferred to you by ${user?.fullName}  `,
                 type: 'debt_transfer',
             });
-        }else {
-            recipient = 'Shared link'
-        }
-
-        
-        
-        const paymentTransaction = await createPaymentTransaction({
+            
+        }else if ( transferMethod === 'Shared link') {
+            recipient = 'Shared link';
+            paymentTransaction = await createPaymentTransaction({
             email: req.user!.email,
             amount: debt.amount,
             metadata: {
@@ -159,7 +153,13 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
             }
         });
 
-        updateData.paymentLink = paymentTransaction.authorization_url;
+        }else {
+            updateData.isListed = true;
+            recipient = 'marketpalce'
+        }
+
+        
+        updateData.paymentLink = paymentTransaction.authorization_url || null;
         console.log('now');
 
         const updatedDebt = await debtService.updateDebt(debtId, updateData);
@@ -188,38 +188,35 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
 
         await transactionService.createTransaction(data)
         
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Debt transfer method updated",
             data: updatedDebt
         });
 
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Internal server error",
             error: error.message
         });
-        return;
     }
 };
 
 export const listedDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const allDebts = await debtService.fetchListedDebt();
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Debts fetched successfully',
             data: allDebts
         })
-        return;
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: 'Internal server error',
             error: error.message
         })
-        return;
     }
 }
 
@@ -229,14 +226,34 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
 
     try {
         const debt = await debtService.fetchDebt(debtId);
-
-        if (!debt ||  debt.transferStatus !== 'pending') {
-            res.status(403).json({ 
+        
+        if (!debt ||  debt.transferStatus === 'accepted') {
+            return res.status(403).json({ 
                 success: false, 
                 message: "Debt already paid " 
             });
-            return;
         }
+
+        const user = await userServices.fetchUserById(userId);
+        const beneficiary = await userServices.fetchUserById(debt.user.toHexString());
+        const userAcc = await accServices.fetchAccount(userId);
+        const debtAcc = await accServices.fetchAccount(debt.user.toHexString())
+
+        if(debt.amount > userAcc!.balance) {
+            return res.status(400).json({
+                success: false,
+                message: 'Insurficient funds'
+            })
+            }
+        
+        const newBal = userAcc!.balance - debt.amount;
+        const balCoins = userAcc!.coins + debt.incentives;
+        const debtCoinBal = debtAcc!.balance - debt.incentives;
+
+        await debtService.updateDebt(debtId, { isCleared: true });
+        await accServices.updateAcc(userId, { type: userAcc!.type, balance: newBal, coins: balCoins });
+        await accServices.updateAcc(debt.user.toHexString(), { type: debtAcc!.type, coins: debtCoinBal });
+        await transactionService.fetchUpdateTransaction(debtId, { status: 'Complete' });
 
         debt.acceptedBy = new Types.ObjectId(userId);
         debt.transferStatus = 'accepted';
@@ -244,12 +261,27 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         await notificationService.createNotification({
             userId: debt.user.toString(),
-            title: 'Your Debt Was Accepted',
-            message: `Your debt of ₦${debt.amount} was accepted by a benefactor.`,
+            title: 'Debt Accepted',
+            message: `Your debt of ₦${debt.amount} was paid by ${user?.fullName}.`,
             type: 'debt_status'
         });
 
-        await transactionService.fetchUpdateTransaction(debtId, { status: 'Accepted'})
+        await notificationService.createNotification({
+            userId: userId,
+            title: 'Debt Cleared',
+            message: `You cleared a debt of ₦${debt.amount} for ${beneficiary?.fullName}.`,
+            type: 'payment'
+        });
+
+        await transactionService.createTransaction({
+              user: user!._id,
+              amount: debt.amount,
+              type: 'Transfer',
+              status: 'complete',
+              fundType: 'DEBIT',
+              recipient: beneficiary?.fullName
+            })
+
 
         const userStats = await statsService.fetchStat(req.user!.userId);
         if (userStats) {
@@ -261,13 +293,33 @@ export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next:
             await userStats.save();
         }
 
-        res.status(200).json({ 
+        // Configure Nodemailer
+        const transporter = nodemailer.createTransport({
+        host: 'mail.gbese.com.ng',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS 
+        }
+        });
+    
+    
+        // Send the email
+        await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL,
+        subject: 'Debt Payment',
+        html: `<p>Debt paid by ${user?.fullName} to <br/> <strong> ${debt.bankName}, ${debt.accountNumber}, ${debt.accountName}, ${debt.bankCode} </strong>.</p>`
+    
+        });
+
+        return res.status(200).json({ 
             success: true, 
-            message: "Debt accepted", 
-            data: debt 
+            message: "Debt accepted and paid successfully", 
         });
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Internal server error'
         })
@@ -280,37 +332,46 @@ export const rejectDebt = async (req: AuthenticatedRequest, res: Response, next:
 
     try {
         const debt = await debtService.fetchDebt(debtId);
+        const user = await userServices.fetchUserById(userId);
 
         if (!debt || debt.transferTarget?.toString() !== userId || debt.transferStatus !== 'pending') {
-            res.status(403).json({
+            return res.status(403).json({
                 success: false,
                 message: "Not authorized to reject this debt"
             });
-            return;
         }
 
         // Mark debt as declined
-        debt.transferStatus = 'declined';
+        debt.transferStatus = 'rejected';
         await debt.save();
 
         // Notify the original user
         await notificationService.createNotification({
             userId: debt.user.toString(),
             title: 'Debt Rejected',
-            message: `Your debt of ₦${debt.amount} was rejected by the intended benefactor.`,
+            message: `Your debt of ₦${debt.amount} was rejected by ${user?.fullName}.`,
             type: 'debt_status'
         });
 
         await transactionService.fetchUpdateTransaction(debtId, { status: 'Failed'})
 
-        res.status(200).json({
+        await transactionService.createTransaction({
+              user: user!._id,
+              amount: debt.amount,
+              type: 'Declined',
+              status: 'Failed',
+              fundType: 'DEBIT',
+              recipient: ""
+            })
+
+        return res.status(200).json({
             success: true,
             message: "Debt rejected",
             data: debt
         });
 
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Internal server error'
         });

@@ -4,10 +4,11 @@ import notificationService from "../services/notificationService";
 import transactionService from "../services/transactionServic";
 import accServices from "../services/accountServices";
 import userServices from "../services/userServices";
-import banksServices from "../services/bankService";
-import { createPaymentTransaction, resolveBank } from '../utils/paystack';
+import requestService from "../services/requestServices";
+import { createPaymentTransaction } from '../utils/paystack';
 import nodemailer from 'nodemailer';
- import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+
 
 
 
@@ -105,58 +106,6 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
     }
 }
 
-export const sendMoneyInternalData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const { amount, accNumber, note } = req.body;
-
-  try {
-    // convert amount input to number
-    const rawAmount = Number(amount);
-    const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
-
-    // fetch receiver
-    const receiver = await userServices.fetchUser('234'+accNumber);
-    if(!receiver){
-      return res.status(400).json({
-        success: false,
-        message: 'Wrong account number'
-      })
-    }
-
-  
-    const formattedDate = dayjs().format('MMMM D, YYYY');
-
-    const year = new Date().getFullYear();
-    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-    const reference = `INV-EXT-${year}-${randomDigits}`;
-    
-    console.log(reference);
-
-    console.log(formattedDate);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Transaction details',
-      data: {
-        to: receiver.fullName,
-        date: formattedDate,
-        amount: amount,
-        bank: 'Gbese',
-        reference: reference,
-        fee: '#00.00',
-        total: `#${amountToNumber}`
-      }
-    })
-    
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    })
-  }
-
-}
-
 export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
   const { amount, accNumber ,note } = req.body;
@@ -201,6 +150,12 @@ export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response
     const receiverBal = receiver!.balance + amountToNumber;
     const receiverCoins = receiver!.coins + 2;
 
+    const formattedDate = dayjs().format('MMMM D, YYYY');
+
+    const year = new Date().getFullYear();
+    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    const reference = `INV-EXT-${year}-${randomDigits}`;
+
     await accServices.updateAcc(userId, {type: user!.type, balance: userBal, coins: userCoins});
     
     await notificationService.createNotification({
@@ -238,73 +193,14 @@ export const sendMoneyInternal = async (req: AuthenticatedRequest, res: Response
 
     return res.status(200).json({
       success: true,
-      message: 'Transfer successful'
-    })
-    
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    })
-  }
-
-}
-
-export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const userId = req.user!.userId;
-  const { amount, bankName, accNumber, note } = req.body;
-
-  try {
-    // convert amount input to number
-    const rawAmount = Number(amount);
-    const amountWithCharge = rawAmount + 50
-    const amountToNumber = (Number.isInteger(amountWithCharge) ? (amountWithCharge + ".00") : amountWithCharge.toString());
-
-    
-  console.log(amountToNumber);
-  
-    // fetch bank data
-    const bankData = await banksServices.fetchBank(bankName);
-    
-    
-    if (!bankData) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid bank details'
-      })
-    }
-
-    //Verify account data
-    const accData = await resolveBank(accNumber, bankData.code)
-    if (!accData || accData.status !== true) {
-        return res.status(400).json({
-            success: false,
-            message: 'Account not found',
-        });
-      }
-   
-  
-    const formattedDate = dayjs().format('MMMM D, YYYY');
-
-    const year = new Date().getFullYear();
-    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-    const reference = `INV-EXT-${year}-${randomDigits}`;
-    
-    console.log(reference);
-
-    console.log(formattedDate);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Transaction details',
+      message: 'Transfer successful',
       data: {
-        to: accData.data.account_name,
+        to: receiverData.fullName,
         date: formattedDate,
         amount: amount,
-        bank: bankName,
+        bank: 'Gbese',
         reference: reference,
-        fee: '#50.00',
+        fee: '#00.00',
         total: `#${amountToNumber}`
       }
     })
@@ -321,7 +217,7 @@ export const sendMoneyExternalData = async (req: AuthenticatedRequest, res: Resp
 
 export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
-  const { amount, bankName, accNumber, accName, reference } = req.body;
+  const { amount, bankName, accNumber, accName } = req.body;
 
   try {
     // convert amount input to number
@@ -332,8 +228,6 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
     
     // fetch user account data
     const user = await accServices.fetchAccount(userId);
-
-    
       
     if (user!.balance < amountWithCharge) {
       return res.status(409).json({
@@ -341,11 +235,15 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
         message: 'Insufficient funds'
       })
     }
-    console.log("funds");
-    
 
     const userBal = user!.balance - amountWithCharge;
     const userCoins = user!.coins + 5;
+
+    const formattedDate = dayjs().format('MMMM D, YYYY');
+
+    const year = new Date().getFullYear();
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    const reference = `INV-EXT-${year}-${randomDigits}`;
 
     await accServices.updateAcc(userId, {type: user!.type, balance: userBal, coins: userCoins});
     
@@ -362,7 +260,7 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
       type: 'Transfer',
       status: 'complete',
       fundType: 'DEBIT',
-      recipient: reference
+      recipient: accName
     })
 
 
@@ -389,7 +287,16 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
 
     return res.status(200).json({
       success: true,
-      message: 'Transfer successful'
+      message: 'Transfer successful',
+      data: {
+        to: accName,
+        date: formattedDate,
+        amount: amount,
+        bank: bankName,
+        reference: reference,
+        fee: '#50.00',
+        total: `#${amountToNumber}`
+      }
     })
     
   } catch (error: any) {
@@ -400,54 +307,11 @@ export const sendMoneyExternal = async (req: AuthenticatedRequest, res: Response
     })
   }
 
-}
-
-export const requestMoneyData = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const { amount, purpose, dueDate, note} = req.body;
-  const { receiverId } = req.params;
-
-  try {
-    const receiver = await userServices.fetchUserById(receiverId)
-    if (!receiver) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalind receiver Id'
-      })
-    }
-
-    // convert amount input to number
-    const rawAmount = Number(amount);
-    const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
-
-    const year = new Date().getFullYear();
-    const randomDigits = Math.floor(1000 + Math.random() * 9000);
-    const reference = `INV-EXT-${year}-${randomDigits}`;
-
-    const formattedDate = dayjs(dueDate).format("MMMM D, YYYY");
-    return res.status(200).json({
-      success: true,
-      message: 'Review Request',
-      data: {
-        to: receiver.fullName,
-        dueDate: formattedDate,
-        amount: `#${amountToNumber}`,
-        description: purpose,
-        refrence: reference
-      }
-    })
-
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    })
-  }
 }
 
 export const requestMoney = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const userId = req.user!.userId;
-  const { amount, purpose, dueDate, reference } = req.body;
+  const { amount, purpose, dueDate, note} = req.body;
   const { receiverId } = req.params;
 
   try {
@@ -455,11 +319,8 @@ export const requestMoney = async (req: AuthenticatedRequest, res: Response, nex
     const rawAmount = Number(amount);
     const amountToNumber = (Number.isInteger(rawAmount) ? (rawAmount + ".00") : rawAmount.toString());
 
-
     // fetch receiver
     const receiverData = await userServices.fetchUserById(receiverId);
-    
-    console.log(receiverData);
     
     if (!receiverData) {
       return res.status(400).json({
@@ -468,43 +329,57 @@ export const requestMoney = async (req: AuthenticatedRequest, res: Response, nex
       })
     }
 
+    const year = new Date().getFullYear();
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    const reference = `INV-EXT-${year}-${randomDigits}`;
+
+    const formattedDate = dayjs(dueDate).format("MMMM D, YYYY");
 
     const userData = await userServices.fetchUserById(userId);
-
-    await notificationService.createNotification({
-      userId: userId,
-      title: 'Request',
-      message: `You requested #${amountToNumber} from ${receiverData.fullName} for ${purpose}`,
-      type: 'debt_status'
-    })
-
-    await transactionService.createTransaction({
+    const transactionId = await transactionService.createTransaction({
       user: userData!._id,
       amount: parseFloat(amountToNumber),
-      type: 'Transfer',
+      type: 'Request',
       status: 'Pending',
       fundType: 'DEBIT',
       recipient: receiverData?.fullName
     })
+
+    await requestService.createRequest({
+      user: userData!._id,
+      receiver: receiverData._id,
+      dueDate: dueDate,
+      amount: amount,
+      description: note || "",
+      refrence: reference,
+      status: 'pending',
+      transactionId: transactionId._id
+    })
+  
+    await notificationService.createNotification({
+      userId: userId,
+      title: 'Request',
+      message: `You requested #${amountToNumber} from ${receiverData.fullName} for ${purpose}`,
+      type: 'fund_account'
+    });
     
     await notificationService.createNotification({
       userId: receiverId,
       title: 'Transfer',
-      message: `${userData?.fullName} hsd requested #${amountToNumber} from you`,
+      message: `${userData?.fullName} has requested #${amountToNumber} from you`,
       type: 'payment'
-    })
-
-    await transactionService.createTransaction({
-      user: receiverData!._id,
-      amount: parseFloat(amountToNumber),
-      type: 'Receive',
-      status: 'Pending',
-      fundType: 'DEBIT',
     })
 
     return res.status(200).json({
       success: true,
-      message: 'Request successful'
+      message: 'Request successful',
+      data: {
+        to: receiverData.fullName,
+        dueDate: formattedDate,
+        amount: `#${amountToNumber}`,
+        description: purpose,
+        refrence: reference
+      }
     })
     
   } catch (error: any) {
@@ -514,5 +389,174 @@ export const requestMoney = async (req: AuthenticatedRequest, res: Response, nex
       error: error.message
     })
   }
+}
 
+export const acceptRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { requestId } = req.params;
+  const userId = req.user!.userId;
+
+  try {
+    const request = await requestService.fetchRequest(requestId);
+    console.log(request);
+    console.log(userId);
+    
+    
+
+    const userAcc = await accServices.fetchAccount(userId);
+    if (!request || userId !== request.receiver.toHexString() || request.status === "accepted") {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input'
+      })
+    }
+
+    const receiverIdString = request.user.toHexString()
+
+    const receiver = await accServices.fetchAccount(receiverIdString);
+    const receiverData = await userServices.fetchUserById(receiverIdString);
+    const userData = await userServices.fetchUserById(userId);
+    
+    const reqAmount = Number(request.amount)
+    if(reqAmount > userAcc!.balance) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insurficient funds'
+      })
+    }
+
+    
+    const userBal = userAcc!.balance - reqAmount;
+    const receiverbal = receiver!.balance + reqAmount;
+    const userCoins = userAcc!.coins + 3;
+
+    await accServices.updateAcc(userId, {type: userAcc!.type, balance: userBal, coins: userCoins});
+    await accServices.updateAcc(receiverIdString, {type: receiver!.type, balance: receiverbal});
+    await transactionService.fetchUpdateTransaction(request.transactionId.toHexString(),{ status: 'Complete' });
+
+    // Notify the original user
+    await notificationService.createNotification({
+      userId: receiverIdString,
+      title: 'Request Accepted',
+      message: `Your Request to ${userData?.fullName} was acceptedd`,
+      type: 'payment'
+    })
+
+    await notificationService.createNotification({
+      userId: userId,
+      title: 'Transfer',
+      message: `Your transfer of #${request.amount} to ${receiverData?.fullName} was successful`,
+      type: 'payment'
+    })
+
+    await transactionService.createTransaction({
+      user: userData!._id,
+      amount: request.amount,
+      type: 'Transfer',
+      status: 'complete',
+      fundType: 'DEBIT',
+      recipient: receiverData?.fullName
+    })
+
+    request.status = 'accepted';
+    await request.save();
+
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment successful'
+    })
+    
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    })
+  }
+}
+
+export const rejectRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const { requestId } = req.params;
+  const userId = req.user!.userId;
+
+  try {
+    const request = await requestService.fetchRequest(requestId);
+    const user = await userServices.fetchUserById(userId);
+
+    if (!request || request.receiver?.toString() !== userId || request.status !== 'pending') {
+        return res.status(403).json({
+            success: false,
+            message: "Not authorized to reject this request"
+        });
+    }
+
+    const beneficiary = await userServices.fetchUserById(request.user.toHexString());
+
+    request.status = 'declined';
+    await request.save();
+
+    // Notify the original user
+    await notificationService.createNotification({
+        userId: request.user.toString(),
+        title: 'Debt Rejected',
+        message: `Your request of ₦${request.amount} was rejected by ${user?.fullName}.`,
+        type: 'debt_status'
+    });
+
+    await notificationService.createNotification({
+        userId: user!._id.toString(),
+        title: 'Debt Rejected',
+        message: `You rejected a request of ₦${request.amount} from ${beneficiary?.fullName}.`,
+        type: 'debt_status'
+    });
+
+    await transactionService.fetchUpdateTransaction(request.transactionId.toHexString(),{ status: 'Failed' })
+
+    await transactionService.createTransaction({
+          user: user!._id,
+          amount: request.amount,
+          type: 'Declined',
+          status: 'Failed',
+          fundType: 'DEBIT',
+          recipient: ""
+        })
+
+    return res.status(200).json({
+        success: true,
+        message: "Request rejected",
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({
+        success: false,
+        message: error.message || 'Internal server error'
+    });
+  }
+};
+
+export const getRequests = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const userId = req.user!.userId;
+  console.log(userId);
+  
+  try {
+    // fetch requests
+    const requests = await requestService.fetchRequests(userId);
+    if (!requests){
+      return res.status(400).json({
+        success: false,
+        message: 'No request found for this user'
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Requests fetched succesfully',
+      requests: requests
+    })
+  } catch (error: any) {
+    return res.status(500).json({
+        success: false,
+        message: error.message || 'Internal server error'
+    });
+  }
 }

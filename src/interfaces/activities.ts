@@ -26,3 +26,14 @@ export interface IStats {
   responseTime: number,
   repeatCase: number
 }
+
+export interface IRequest {
+  user: Types.ObjectId,
+  receiver: Types.ObjectId,
+  dueDate: string,
+  amount: number,
+  description: string,
+  refrence: string,
+  status: 'pending' | 'accepted' | 'declined',
+  transactionId: Types.ObjectId
+}

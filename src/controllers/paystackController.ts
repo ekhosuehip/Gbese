@@ -44,29 +44,7 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
 
     if (event.event === 'charge.success') {
       switch (metadata.type) {
-        case 'debt_payment': {
-          const debtId = metadata.debtId;
-          const debt = await debtService.fetchDebt(debtId);
-          const accId = debt!.user.toString();
-          const acc = await accServices.fetchAccount(accId);
-          const balCoins = acc!.coins - debt!.incentives;
-
-          if (debt && debt.amount <= amountPaid) {
-            await debtService.updateDebt(debtId, { isCleared: true });
-            await accServices.updateAcc(accId, { type: acc!.type, coins: balCoins });
-            await transactionService.fetchUpdateTransaction(debtId, { status: 'Complete' });
-          }
-
-          await notificationService.createNotification({
-            userId: accId,
-            title: 'Your Debt Was Paid',
-            message: `Your debt of ₦${debt!.amount} was successfully paid.`,
-            type: 'payment'
-          });
-
-          break;
-        }
-
+        
         case 'fund_account': {
           const accId = metadata.accId;
           const userAcc = await accServices.fetchAccount(accId);
@@ -99,19 +77,16 @@ export const handlePaystackWebhook = async (req: AuthenticatedRequest, res: Resp
           console.warn('Unhandled metadata type:', metadata.type);
       }
 
-      res.status(200).send('ok');
-      return;
+      return res.status(200).send('ok');
     }
 
-    res.status(200).send('ignored');
-    return;
+    return res.status(200).send('ignored');
 
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error',
       error: error.message
     });
-    return;
   }
 };
