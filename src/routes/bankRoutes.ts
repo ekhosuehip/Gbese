@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchAllBanks, fetchBank } from "../controllers/banksController";
+import { fetchAllBanks, fetchBank, resolveBankDetails } from "../controllers/banksController";
 
 const router = Router();
 
@@ -39,5 +39,7 @@ router.get('/banks/all', fetchAllBanks);
  *         description: Internal server error
  */
 router.get('/bank', fetchBank);
+
+router.post('/bank/resolve', resolveBankDetails)
 
 export default router;
