@@ -55,6 +55,66 @@ router.get('/benefactor',  getBenefactor);
  */
 
 router.get('/user/account', getUserAccount);
+/**
+ * @swagger
+ * /api/v2/user/all:
+ *   get:
+ *     summary: Get all users
+ *     description: Fetches all user accounts. Requires authentication and is typically restricted to admin users.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all user accounts retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User account fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "663dadaf89ae1b40b79e9df6"
+ *                       fullName:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       email:
+ *                         type: string
+ *                         example: "john@example.com"
+ *                       phone:
+ *                         type: string
+ *                         example: "2348012345678"
+ *                       role:
+ *                         type: string
+ *                         example: "user"
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *       500:
+ *         description: Server error while fetching users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
 
 router.get('/all/account', allUser);
 
