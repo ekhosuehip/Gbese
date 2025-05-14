@@ -51,7 +51,7 @@ router.get('/notifications', getNotifications);
  * /transactions:
  *   get:
  *     summary: Get all transactions for the logged-in user
- *     tags:`
+ *     tags:
  *       - Transaction
  *     security:
  *       - bearerAuth: []
