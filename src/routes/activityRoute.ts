@@ -120,11 +120,11 @@ router.post('/fund/account', fundAcc)
 router.post('/send/internal', sendMoneyInternal);
 /**
  * @swagger
- * /api/v2/account/transfer/internal/data:
+ * /transfer/external:
  *   post:
- *     summary: Prepare internal transfer transaction details
+ *     summary: Send money to an external bank account
  *     tags:
- *       - Account
+ *       - Transfer
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -135,67 +135,59 @@ router.post('/send/internal', sendMoneyInternal);
  *             type: object
  *             required:
  *               - amount
+ *               - bankName
  *               - accNumber
+ *               - accName
  *             properties:
  *               amount:
  *                 type: number
  *                 example: 1000
+ *               bankName:
+ *                 type: string
+ *                 example: "Access Bank"
  *               accNumber:
  *                 type: string
- *                 description: Receiver's phone number without country code
- *                 example: "8123456789"
- *               note:
+ *                 example: "0123456789"
+ *               accName:
  *                 type: string
- *                 example: "Thanks for the help"
+ *                 example: "John Doe"
  *     responses:
  *       200:
- *         description: Returns formatted transaction preview
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Transaction details
- *                 data:
- *                   type: object
- *                   properties:
- *                     to:
- *                       type: string
- *                       example: John Doe
- *                     date:
- *                       type: string
- *                       example: May 13, 2025
- *                     amount:
- *                       type: number
- *                       example: 1000
- *                     bank:
- *                       type: string
- *                       example: Gbese
- *                     reference:
- *                       type: string
- *                       example: INV-EXT-2025-8432
- *                     fee:
- *                       type: string
- *                       example: "#00.00"
- *                     total:
- *                       type: string
- *                       example: "#1000.00"
- *       400:
- *         description: Invalid receiver details
+ *         description: Transfer successful
+ *       409:
+ *         description: Insufficient funds
  *       500:
  *         description: Internal server error
  */
 
-router.post('/send/internal/data', sendMoneyInternalData)
 
 router.post('/send/external', sendMoneyExternal)
+/**
+ * @swagger
+ * /request/reject/{requestId}:
+ *   patch:
+ *     summary: Reject a pending request
+ *     tags:
+ *       - Request
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: requestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the request to reject
+ *     responses:
+ *       200:
+ *         description: Request rejected
+ *       403:
+ *         description: Not authorized to reject this request
+ *       500:
+ *         description: Internal server error
+ */
 
-router.post('/send/external/data', sendMoneyExternalData)
+
 
 router.post('/request/reject/:requestId', rejectRequest);
 
