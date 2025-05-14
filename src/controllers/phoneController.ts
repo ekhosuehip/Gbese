@@ -112,33 +112,3 @@ export const verifyNumber = async (req: Request, res: Response, next: NextFuncti
     });
   }
 };
-
-// export const forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
-//   const { email } = req.body;
-
-//   try {
-//     // To check if user exists
-//     const user = await userServices.fetchUser(email);
-//     if (!user) {
-//      res.status(400).json({ 
-//           success: false, 
-//           message: 'No user found' });
-//      return;
-//     }
-//     const userId = user._id.toString();
-//     const response = await sendEmail(email, userId);
-//     res.status(200).json({
-//       success: true,
-//       message: 'Email sent successfully',
-//       data: response
-//     })
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: 'Internal server error'
-//     })
-//     console.log(error);
-    
-//     return
-//   }
-// }

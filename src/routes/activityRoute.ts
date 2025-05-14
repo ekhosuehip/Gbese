@@ -64,7 +64,12 @@ router.get('/notifications', getNotifications);
 
 router.get('/transactions', getTransactions);
 
-router.post('/fund/account', fundAcc)
+router.get('/request/:requestId', getRequests);
+
+router.post('/send/request', requestMoney);
+
+router.patch('/fund/account', fundAcc);
+
 /**
  * @swagger
  * /api/v2/account/transfer/internal:
@@ -115,9 +120,9 @@ router.post('/fund/account', fundAcc)
  *       500:
  *         description: Internal server error
  */
-
-
 router.post('/send/internal', sendMoneyInternal);
+
+
 /**
  * @swagger
  * /transfer/external:
@@ -159,9 +164,10 @@ router.post('/send/internal', sendMoneyInternal);
  *       500:
  *         description: Internal server error
  */
+router.post('/send/external', sendMoneyExternal);
 
 
-router.post('/send/external', sendMoneyExternal)
+router.patch('/request/accept/:requestId', acceptRequest);
 /**
  * @swagger
  * /request/reject/{requestId}:
@@ -187,9 +193,7 @@ router.post('/send/external', sendMoneyExternal)
  *         description: Internal server error
  */
 
-
-
-router.post('/request/reject/:requestId', rejectRequest);
+router.patch('/request/reject/:requestId', rejectRequest);
 
 
 export default router
