@@ -29,13 +29,33 @@ export const getBenefactor = async ( req: AuthenticatedRequest, res: Response, n
   }
 };
 
-
 export const getUserStats = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const userId = req.user!.userId
 
     try {   
         //get user stats
         const stats = await statsService.fetchStat(userId);
+        console.log(stats);
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Stats fetched successfully',
+            data: stats
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Internal server error'
+        })
+    }
+}
+
+export const getStats = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { id } = req.params
+
+    try {   
+        //get user stats
+        const stats = await statsService.fetchStat(id);
         console.log(stats);
         
         return res.status(200).json({
