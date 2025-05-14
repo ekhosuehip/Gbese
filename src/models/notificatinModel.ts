@@ -8,7 +8,7 @@ const NotificationSchema: Schema = new Schema({
   message: {type: String},
   type: { type: String, enum: ['debt_transfer', 'debt_status', 'payment', 'fund_account'], required: true },
   createdAt: { type: Date, default: Date.now }
-});
+}, {versionKey: false});
 
 const Notification = model<INotification>('Notification', NotificationSchema);
 
