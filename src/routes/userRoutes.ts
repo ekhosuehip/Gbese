@@ -117,8 +117,45 @@ router.get('/user/account', getUserAccount);
  */
 
 router.get('/all/account', allUser);
+/**
+ * @swagger
+ * /user/stats:
+ *   get:
+ *     summary: Get user statistics
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats fetched successfully
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get('/user/stat',  getUserStats);
+/**
+ * @swagger
+ * /user/stats/{id}:
+ *   get:
+ *     summary: Get statistics for a specific user by ID
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats fetched successfully
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get('/user/stat/:id',  getStats);
 
