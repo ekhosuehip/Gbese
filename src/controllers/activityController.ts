@@ -400,8 +400,6 @@ export const acceptRequest = async (req: AuthenticatedRequest, res: Response, ne
     console.log(request);
     console.log(userId);
     
-    
-
     const userAcc = await accServices.fetchAccount(userId);
     if (!request || userId !== request.receiver.toHexString() || request.status === "accepted") {
       return res.status(400).json({

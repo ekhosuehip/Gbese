@@ -1,6 +1,6 @@
 import express from 'express';
 import { upload } from '../middlewares/multer';
-import { createDebt, transferMethod, listedDebt } from '../controllers/debtcontroller';
+import { createDebt, transferMethod, listedDebt, acceptDebt, rejectDebt } from '../controllers/debtcontroller';
 import { protect } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/joi';
 import { debtSchema } from '../middlewares/joiSchema'
@@ -125,7 +125,11 @@ router.get('/debt/marketplace', listedDebt)
  *         description: Internal server error
  */
 
-router.put('/debt/transfer/:debtId', transferMethod);
+router.patch('/debt/transfer/:debtId', transferMethod);
+
+router.patch('/debt/accept/:debtId', acceptDebt);
+
+router.patch('/debt/reject/:debtId', rejectDebt);
 
 
 export default router;
