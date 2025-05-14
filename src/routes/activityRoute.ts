@@ -51,7 +51,7 @@ router.get('/notifications', getNotifications);
  * /transactions:
  *   get:
  *     summary: Get all transactions for the logged-in user
- *     tags:
+ *     tags:`
  *       - Transaction
  *     security:
  *       - bearerAuth: []
@@ -64,17 +64,130 @@ router.get('/notifications', getNotifications);
 
 router.get('/transactions', getTransactions);
 
-router.get('/requests', getRequests)
-
 router.post('/fund/account', fundAcc)
+/**
+ * @swagger
+ * /api/v2/account/transfer/internal:
+ *   post:
+ *     summary: Send money internally to another user within the platform
+ *     tags:
+ *       - Account
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *               - accNumber
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 1000
+ *               accNumber:
+ *                 type: string
+ *                 description: Receiver's phone number without the country code (e.g., '8123456789')
+ *                 example: "8123456789"
+ *               note:
+ *                 type: string
+ *                 example: "For lunch"
+ *     responses:
+ *       200:
+ *         description: Transfer successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Transfer successful
+ *       400:
+ *         description: Invalid receiver details
+ *       409:
+ *         description: Insufficient funds
+ *       500:
+ *         description: Internal server error
+ */
+
 
 router.post('/send/internal', sendMoneyInternal);
+/**
+ * @swagger
+ * /transfer/external:
+ *   post:
+ *     summary: Send money to an external bank account
+ *     tags:
+ *       - Transfer
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *               - bankName
+ *               - accNumber
+ *               - accName
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 1000
+ *               bankName:
+ *                 type: string
+ *                 example: "Access Bank"
+ *               accNumber:
+ *                 type: string
+ *                 example: "0123456789"
+ *               accName:
+ *                 type: string
+ *                 example: "John Doe"
+ *     responses:
+ *       200:
+ *         description: Transfer successful
+ *       409:
+ *         description: Insufficient funds
+ *       500:
+ *         description: Internal server error
+ */
 
-router.post('/send/external', sendMoneyExternal);
 
-router.post('/request/data/:receiverId', requestMoney);
+router.post('/send/external', sendMoneyExternal)
+/**
+ * @swagger
+ * /request/reject/{requestId}:
+ *   patch:
+ *     summary: Reject a pending request
+ *     tags:
+ *       - Request
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: requestId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the request to reject
+ *     responses:
+ *       200:
+ *         description: Request rejected
+ *       403:
+ *         description: Not authorized to reject this request
+ *       500:
+ *         description: Internal server error
+ */
 
-router.post('/request/accept/:requestId', acceptRequest);
+
 
 router.post('/request/reject/:requestId', rejectRequest);
 

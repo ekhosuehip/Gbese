@@ -39,6 +39,36 @@ router.get('/banks/all', fetchAllBanks);
  *         description: Internal server error
  */
 router.get('/bank', fetchBank);
+/**
+ * @swagger
+ * /resolve-account:
+ *   post:
+ *     summary: Resolve bank account details using account number and bank code
+ *     tags:
+ *       - Bank
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accNumber:
+ *                 type: string
+ *                 example: "0123456789"
+ *               bankCode:
+ *                 type: string
+ *                 example: "058"
+ *     responses:
+ *       200:
+ *         description: Account resolved successfully
+ *       400:
+ *         description: Account not found
+ *       500:
+ *         description: Internal server error
+ */
 
 router.post('/bank/resolve', resolveBankDetails)
 
