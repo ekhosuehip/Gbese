@@ -141,7 +141,7 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
                 type: 'debt_transfer',
             });
             
-        } else if (transferMethod.toLowerCase() === 'shared link') {
+        } else if (transferMethod.toLowerCase() === 'sharedLink') {
             recipient = 'Shared link',
             paymentTransaction = await createPaymentTransaction({
                 email: req.user!.email,

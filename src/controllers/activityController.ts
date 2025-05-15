@@ -18,19 +18,18 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response,
     const notifications = await notificationService.fetchNotification(userId)
 
     if (notifications.length < 1) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'No notification found'
       })
-      return;
     }
-    res.status(200).json({ 
+    return res.status(200).json({ 
       success: true,
       message: 'Notifications fetched successfully', 
       data: notifications 
     });
   } catch (error: any) {
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
       message: error.message 
     });
@@ -44,19 +43,18 @@ export const getTransactions = async (req: AuthenticatedRequest, res: Response, 
     const transactions = await transactionService.fetchTransaction(userId);
 
     if (transactions.length < 1) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'No recent transaction'
       })
-      return;
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Transactions fetched successfully',
       data: transactions
     })
   } catch (error: any) {
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
       message: error.message 
     });
@@ -71,7 +69,7 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
   try {
 
     if(!email ){
-      res.status(401).json({
+      return res.status(401).json({
         sucess: false,
         message: 'Unauthorized user'
       })
@@ -89,7 +87,7 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
 
     const paymentLink = paymentTransaction.authorization_url
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Funding link created',
       data: paymentLink
@@ -97,12 +95,11 @@ export const fundAcc = async (req: AuthenticatedRequest, res: Response, next: Ne
 
 
   } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "Internal server error",
         error: error.message
       });
-      return;
     }
 }
 
