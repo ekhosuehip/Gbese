@@ -123,8 +123,7 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
 
         let recipient;
         let paymentTransaction;
-
-        if (transferMethod === 'specific') {
+        if (transferMethod.toLowerCase() === 'specific') {
             updateData.transferTarget = receiverId;
             const receiver = await userServices.fetchUserById(receiverId)
             recipient = receiver?.fullName
@@ -142,24 +141,35 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
                 type: 'debt_transfer',
             });
             
-        }else if ( transferMethod === 'Shared link') {
-            recipient = 'Shared link';
+        } else if (transferMethod.toLowerCase() === 'shared link') {
+            recipient = 'Shared link',
             paymentTransaction = await createPaymentTransaction({
-            email: req.user!.email,
-            amount: debt.amount,
-            metadata: {
-                type: "debt_payment",
-                debtId: debtId
-            }
-        });
+                email: req.user!.email,
+                amount: debt.amount,
+                metadata: {
+                    type: "debt_payment",
+                    debtId: debtId
+                }
+            });
 
-        }else {
+            console.log("paymentTransaction:", paymentTransaction);
+
+            if (!paymentTransaction || !paymentTransaction.authorization_url) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to create payment link',
+                });
+            }
+
+            updateData.paymentLink = paymentTransaction.authorization_url;
+        } else {
             updateData.isListed = true;
             recipient = 'marketpalce'
         }
 
         
-        updateData.paymentLink = paymentTransaction.authorization_url || null;
+
+        
         console.log('now');
 
         const updatedDebt = await debtService.updateDebt(debtId, updateData);
@@ -219,6 +229,48 @@ export const listedDebt = async (req: AuthenticatedRequest, res: Response, next:
         })
     }
 }
+
+export const listedUserDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const userId = req.user!.userId;
+
+  try {
+    const allDebts = await debtService.fetchListedDebt();
+
+    if (!allDebts || allDebts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No debts found',
+      });
+    }
+    console.log(allDebts);
+    
+
+    // filter user debt
+    const userDebt = allDebts.filter(debt => debt.user._id.toString() === userId);
+
+    if (userDebt.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No debts found for this user',
+      });
+    }
+    console.log(userDebt);
+    
+
+    return res.status(200).json({
+      success: true,
+      message: 'Debts fetched successfully',
+      data: userDebt,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
+};
+
 
 export const acceptDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { debtId } = req.params;
