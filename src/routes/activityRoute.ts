@@ -63,10 +63,94 @@ router.get('/notifications', getNotifications);
  */
 
 router.get('/transactions', getTransactions);
+/**
+ * @swagger
+ * /request:
+ *   get:
+ *     summary: Fetch all requests for the logged-in user
+ *     tags:
+ *       - Request
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Requests fetched successfully
+ *       400:
+ *         description: No request found for this user
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get('/request/:requestId', getRequests);
+/**
+ * @swagger
+ * /request/{receiverId}:
+ *   post:
+ *     summary: Request money from another user
+ *     tags:
+ *       - Request
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: receiverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user to request money from
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               purpose:
+ *                 type: string
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *               note:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Request successful
+ *       400:
+ *         description: Invalid receiver details
+ *       500:
+ *         description: Internal server error
+ */
 
 router.post('/send/request', requestMoney);
+/**
+ * @swagger
+ * /fund:
+ *   post:
+ *     summary: Generate a funding link to fund a user's account
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 1000
+ *     responses:
+ *       200:
+ *         description: Funding link created
+ *       401:
+ *         description: Unauthorized user
+ *       500:
+ *         description: Internal server error
+ */
 
 router.patch('/fund/account', fundAcc);
 

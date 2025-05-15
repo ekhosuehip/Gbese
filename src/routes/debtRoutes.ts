@@ -128,8 +128,58 @@ router.get('/debt/user', listedUserDebt)
  */
 
 router.patch('/debt/transfer/:debtId', transferMethod);
+/**
+ * @swagger
+ * /debts/accept/{debtId}:
+ *   post:
+ *     summary: Accept and pay off a debt
+ *     tags:
+ *       - Debt
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: debtId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the debt to accept
+ *     responses:
+ *       200:
+ *         description: Debt accepted and paid successfully
+ *       400:
+ *         description: Insufficient funds or bad request
+ *       403:
+ *         description: Debt already paid or not allowed
+ *       500:
+ *         description: Internal server error
+ */
 
 router.patch('/debt/accept/:debtId', acceptDebt);
+/**
+ * @swagger
+ * /debts/reject/{debtId}:
+ *   post:
+ *     summary: Reject a pending debt request
+ *     tags:
+ *       - Debt
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: debtId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the debt to reject
+ *     responses:
+ *       200:
+ *         description: Debt rejected successfully
+ *       403:
+ *         description: Not authorized to reject this debt
+ *       500:
+ *         description: Internal server error
+ */
 
 router.patch('/debt/reject/:debtId', rejectDebt);
 
