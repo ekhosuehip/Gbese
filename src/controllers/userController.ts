@@ -57,6 +57,13 @@ export const getStats = async (req: AuthenticatedRequest, res: Response, next: N
         //get user stats
         const stats = await statsService.fetchStat(id);
         console.log(stats);
+
+        if (!stats || stats === null) {
+          return res.status(404).json({
+            success: false,
+            message: 'No stats found',
+          });
+        }
         
         return res.status(200).json({
             success: true,
