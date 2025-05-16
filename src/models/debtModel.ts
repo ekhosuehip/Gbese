@@ -18,7 +18,7 @@ const debtSchema = new Schema({
     isListed: { type: Boolean, default: false},
     transferMethod: {
     type: String,
-    enum: ['marketplace', 'direct', 'link'],
+    enum: ['marketplace', 'sharedLink', 'specific'],
     default: null,
   },
     isCleared: { type: Boolean, default: false },
