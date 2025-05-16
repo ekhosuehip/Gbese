@@ -69,7 +69,7 @@ router.use(protect)
  *       500:
  *         description: Internal server error
  */
-router.post('/debt/upload', upload.single('statementFile'), validate(debtSchema.createDebtData), createDebt);
+router.post('/debt/upload', upload.single('statementFile'), createDebt);
 /**
  * @swagger
  * /debt/listed:

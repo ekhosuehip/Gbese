@@ -15,7 +15,7 @@ import nodemailer from 'nodemailer';
 
 
 export const createDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-   const {bankCode, debtSource, accountNumber, description, amount, dueDate, interestRate, incentives} = req.body
+   const {bankCode, debtSource, accountNumber, description, amount, dueDate, interestRate, incentives, transferMethod, receiverId} = req.body
    const statementFile = req.file;
    
     const userId= req.user!.userId;
@@ -60,6 +60,54 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         const statusLabel = isOverdue ? 'overdue' : 'coming up';
 
+        let paymentLink
+        let transferTarget;
+        let recipient;
+        let paymentTransaction;
+        if (transferMethod === 'specific') {
+            transferTarget = receiverId;
+            const receiver = await userServices.fetchUserById(receiverId)
+            recipient = receiver?.fullName
+
+            //updating benefactor stats
+            const receiverStats = await statsService.fetchStat(receiverId)
+            if (receiverStats) {
+            receiverStats.debtTransfers += 1;
+            await receiverStats.save(); }
+
+            await notificationService.createNotification({
+                userId: receiverId,
+                title: 'New Debt Transferred to You',
+                message: `A debt of ₦${amount} has been transferred to you by ${user?.fullName}  `,
+                type: 'debt_transfer',
+            });
+        } else if (transferMethod === 'sharedLink') {
+            recipient = 'SharedLink',
+            paymentTransaction = await createPaymentTransaction({
+                email: req.user!.email,
+                amount: amount,
+                metadata: {
+                    type: "debt_payment",
+                }
+            });
+
+            console.log("paymentTransaction:", paymentTransaction);
+
+            if (!paymentTransaction || !paymentTransaction.authorization_url) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to create payment link',
+                });
+            }
+
+            paymentLink = paymentTransaction.authorization_url;
+        } else {
+            recipient = 'marketplace'
+        }
+
+        const isListed = recipient === "marketplace" ? true : false;
+
+
         const newDebt = {
             user: user!._id,
             note: description,
@@ -72,7 +120,13 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
             accountName: accData.data.account_name,
             amount: amount,
             dueDate: dueDate,
-            status: statusLabel
+            status: statusLabel,
+            transferMethod: transferMethod,
+            recipient: recipient,
+            paymentLink: paymentLink,
+            isListed: isListed,
+            transferTarget: transferTarget,
+            isTransferred: true
         };
 
         const createdDebt = await debtService.createDebt(newDebt);
@@ -95,6 +149,7 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { debtId } = req.params;
     const { transferMethod, receiverId } = req.body;
+    
     const userId = req.user!.userId
 
     console.log(transferMethod, receiverId);

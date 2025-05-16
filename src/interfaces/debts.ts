@@ -15,7 +15,7 @@ export interface IDebt extends Document {
   status: string,
   isListed?: boolean,
   isCleared: boolean,
-  transferMethod?: 'marketplace' | 'direct' | 'link',
+  transferMethod?: 'marketplace' | 'sharedLink' | 'specific',
   isTransferred?: boolean,
   transferTarget?: Types.ObjectId,
   transferStatus?: 'pending' | 'accepted' | 'rejected',
