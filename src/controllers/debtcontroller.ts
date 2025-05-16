@@ -98,6 +98,13 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
     const userId = req.user!.userId
 
     console.log(transferMethod);
+
+     if (!transferMethod || !debtId) {
+            return res.status(400).json({
+                success: false,
+                message: 'transferMethod and debtId is required'
+            });
+            }
     
 
     try {
