@@ -127,7 +127,7 @@ router.get('/debt/user', listedUserDebt)
  *         description: Internal server error
  */
 
-router.put('/debt/transfer/:debtId', transferMethod);
+router.patch('/debt/transfer/:debtId', transferMethod);
 
 router.patch('/debt/accept/:debtId', acceptDebt);
 

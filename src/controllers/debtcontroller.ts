@@ -97,7 +97,8 @@ export const transferMethod = async (req: AuthenticatedRequest, res: Response, n
     const { transferMethod, receiverId } = req.body;
     const userId = req.user!.userId
 
-    console.log(transferMethod);
+    console.log(transferMethod, receiverId);
+    console.log(debtId);
 
      if (!transferMethod || !debtId) {
             return res.status(400).json({
