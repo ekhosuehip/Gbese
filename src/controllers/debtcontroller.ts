@@ -28,6 +28,16 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
     }
     try {
 
+         //Verify account data
+        const accData = await resolveBank(accountNumber, bankCode);
+
+        if (!accData || accData.status !== true) {
+        return res.status(400).json({
+            success: false,
+            message: 'Account not found',
+        });
+        }
+
         const user = await userServices.fetchUserById(userId);
 
         if (!user) {
@@ -38,18 +48,6 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
         }
 
         const imageUrl = await s3Upload(statementFile);
-        console.log(imageUrl);
-        
-        //Verify account data
-        const accData = await resolveBank(accountNumber, bankCode)
-        console.log(accData);
-
-        if (!accData || accData.status !== true) {
-        return res.status(400).json({
-            success: false,
-            message: 'Account not found',
-        });
-        }
 
         //Check the status of the debt
         const now = new Date();
@@ -242,8 +240,6 @@ export const listedUserDebt = async (req: AuthenticatedRequest, res: Response, n
         message: 'No debts found',
       });
     }
-    console.log(allDebts);
-    
 
     // filter user debt
     const userDebt = allDebts.filter(debt => debt.user._id.toString() === userId);
@@ -254,8 +250,7 @@ export const listedUserDebt = async (req: AuthenticatedRequest, res: Response, n
         message: 'No debts found for this user',
       });
     }
-    console.log(userDebt);
-    
+ 
 
     return res.status(200).json({
       success: true,

@@ -23,6 +23,7 @@ export const resolveBank = async (accNumber: string, bankCode: string): Promise<
     return response.data;
   } catch (error: any) {
     console.error('Error resolving account:', error.response?.data || error.message);
+    return error.response
     throw new Error('Bank resolution failed');
   }
 };
