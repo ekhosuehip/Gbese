@@ -68,7 +68,7 @@ router.get('/request/:requestId', getRequests);
 
 router.post('/send/request', requestMoney);
 
-router.patch('/fund/account', fundAcc);
+router.post('/fund/account', fundAcc);
 
 /**
  * @swagger

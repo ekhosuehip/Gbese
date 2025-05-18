@@ -131,6 +131,28 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
 
         const createdDebt = await debtService.createDebt(newDebt);
 
+        const userID = new Types.ObjectId(req.user!.userId);
+        const debtID = createdDebt._id as Types.ObjectId;
+
+        const data = {
+            user: userID,
+            debtId: debtID,
+            type:  'Transfer_debt',
+            amount: amount,
+            status: 'Pending',
+            fundType: 'debit',
+            recipient: recipient,
+        }
+
+        //update beneficiary stats
+        const userStats = await statsService.fetchStat(req.user!.userId);
+        if (userStats) {
+            userStats.debtTransfers += 1;
+            await userStats.save(); 
+        }
+
+        await transactionService.createTransaction(data)
+
         return res.status(200).json({
             success: true,
             message: 'Debt create successfully',
@@ -146,133 +168,133 @@ export const createDebt = async (req: AuthenticatedRequest, res: Response, next:
     
 }
 
-export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const { debtId } = req.params;
-    const { transferMethod, receiverId } = req.body;
+// export const transferMethod = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//     const { debtId } = req.params;
+//     const { transferMethod, receiverId } = req.body;
     
-    const userId = req.user!.userId
+//     const userId = req.user!.userId
 
-    console.log(transferMethod, receiverId);
-    console.log(debtId);
+//     console.log(transferMethod, receiverId);
+//     console.log(debtId);
 
-     if (!transferMethod || !debtId) {
-            return res.status(400).json({
-                success: false,
-                message: 'transferMethod and debtId is required'
-            });
-            }
+//      if (!transferMethod || !debtId) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'transferMethod and debtId is required'
+//             });
+//             }
     
 
-    try {
-        // fetch dabt
-        const debt = await debtService.fetchDebt(debtId);
+//     try {
+//         // fetch dabt
+//         const debt = await debtService.fetchDebt(debtId);
 
-        const user = await userServices.fetchUserById(userId);
+//         const user = await userServices.fetchUserById(userId);
         
-        if (!debt) {
-            return res.status(400).json({
-                success: false,
-                message: `No debt matching ID ${debtId} found`
-            });
-        }
+//         if (!debt) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: `No debt matching ID ${debtId} found`
+//             });
+//         }
 
-        // Apply transfer method updates
-        const updateData: Partial<IDebt> = {
-            transferMethod: transferMethod,
-            isTransferred: true
-        };
+//         // Apply transfer method updates
+//         const updateData: Partial<IDebt> = {
+//             transferMethod: transferMethod,
+//             isTransferred: true
+//         };
 
-        let recipient;
-        let paymentTransaction;
-        if (transferMethod.toLowerCase() === 'specific') {
-            updateData.transferTarget = receiverId;
-            const receiver = await userServices.fetchUserById(receiverId)
-            recipient = receiver?.fullName
+//         let recipient;
+//         let paymentTransaction;
+//         if (transferMethod.toLowerCase() === 'specific') {
+//             updateData.transferTarget = receiverId;
+//             const receiver = await userServices.fetchUserById(receiverId)
+//             recipient = receiver?.fullName
 
-            //updating benefactor stats
-            const receiverStats = await statsService.fetchStat(receiverId)
-            if (receiverStats) {
-            receiverStats.debtTransfers += 1;
-            await receiverStats.save(); }
+//             //updating benefactor stats
+//             const receiverStats = await statsService.fetchStat(receiverId)
+//             if (receiverStats) {
+//             receiverStats.debtTransfers += 1;
+//             await receiverStats.save(); }
 
-            await notificationService.createNotification({
-                userId: receiverId,
-                title: 'New Debt Transferred to You',
-                message: `A debt of ₦${debt.amount} has been transferred to you by ${user?.fullName}  `,
-                type: 'debt_transfer',
-            });
+//             await notificationService.createNotification({
+//                 userId: receiverId,
+//                 title: 'New Debt Transferred to You',
+//                 message: `A debt of ₦${debt.amount} has been transferred to you by ${user?.fullName}  `,
+//                 type: 'debt_transfer',
+//             });
             
-        } else if (transferMethod.toLowerCase() === 'sharedLink') {
-            recipient = 'Shared link',
-            paymentTransaction = await createPaymentTransaction({
-                email: req.user!.email,
-                amount: debt.amount,
-                metadata: {
-                    type: "debt_payment",
-                    debtId: debtId
-                }
-            });
+//         } else if (transferMethod.toLowerCase() === 'sharedLink') {
+//             recipient = 'Shared link',
+//             paymentTransaction = await createPaymentTransaction({
+//                 email: req.user!.email,
+//                 amount: debt.amount,
+//                 metadata: {
+//                     type: "debt_payment",
+//                     debtId: debtId
+//                 }
+//             });
 
-            console.log("paymentTransaction:", paymentTransaction);
+//             console.log("paymentTransaction:", paymentTransaction);
 
-            if (!paymentTransaction || !paymentTransaction.authorization_url) {
-                return res.status(500).json({
-                    success: false,
-                    message: 'Failed to create payment link',
-                });
-            }
+//             if (!paymentTransaction || !paymentTransaction.authorization_url) {
+//                 return res.status(500).json({
+//                     success: false,
+//                     message: 'Failed to create payment link',
+//                 });
+//             }
 
-            updateData.paymentLink = paymentTransaction.authorization_url;
-        } else {
-            updateData.isListed = true;
-            recipient = 'marketpalce'
-        }
-
-        
+//             updateData.paymentLink = paymentTransaction.authorization_url;
+//         } else {
+//             updateData.isListed = true;
+//             recipient = 'marketpalce'
+//         }
 
         
-        console.log('now');
 
-        const updatedDebt = await debtService.updateDebt(debtId, updateData);
-
-        console.log(updatedDebt);
-
-        const userID = new Types.ObjectId(req.user!.userId);
-        const debtID = new Types.ObjectId(debtId);
-
-        const data = {
-            user: userID,
-            debtId: debtID,
-            type:  'Transfer_debt',
-            amount: debt.amount,
-            status: 'Pending',
-            fundType: 'debit',
-            recipient: recipient,
-        }
-
-        //update beneficiary stats
-        const userStats = await statsService.fetchStat(req.user!.userId);
-        if (userStats) {
-            userStats.debtTransfers += 1;
-            await userStats.save(); 
-        }
-
-        await transactionService.createTransaction(data)
         
-        return res.status(200).json({
-            success: true,
-            message: "Debt transfer method updated",
-            data: updatedDebt
-        });
+//         console.log('now');
 
-    } catch (error: any) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        });
-    }
-};
+//         const updatedDebt = await debtService.updateDebt(debtId, updateData);
+
+//         console.log(updatedDebt);
+
+//         const userID = new Types.ObjectId(req.user!.userId);
+//         const debtID = new Types.ObjectId(debtId);
+
+//         const data = {
+//             user: userID,
+//             debtId: debtID,
+//             type:  'Transfer_debt',
+//             amount: debt.amount,
+//             status: 'Pending',
+//             fundType: 'debit',
+//             recipient: recipient,
+//         }
+
+//         //update beneficiary stats
+//         const userStats = await statsService.fetchStat(req.user!.userId);
+//         if (userStats) {
+//             userStats.debtTransfers += 1;
+//             await userStats.save(); 
+//         }
+
+//         await transactionService.createTransaction(data)
+        
+//         return res.status(200).json({
+//             success: true,
+//             message: "Debt transfer method updated",
+//             data: updatedDebt
+//         });
+
+//     } catch (error: any) {
+//         return res.status(500).json({
+//             success: false,
+//             message: "Internal server error",
+//             error: error.message
+//         });
+//     }
+// };
 
 export const listedDebt = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
