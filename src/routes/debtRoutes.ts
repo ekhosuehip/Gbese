@@ -129,9 +129,9 @@ router.get('/debt/user', listedUserDebt)
 
 // router.patch('/debt/transfer/:debtId', transferMethod);
 
-router.post('/debt/accept/:debtId', acceptDebt);
+router.patch('/debt/accept/:debtId', acceptDebt);
 
-router.post('/debt/reject/:debtId', rejectDebt);
+router.patch('/debt/reject/:debtId', rejectDebt);
 
 
 export default router;
