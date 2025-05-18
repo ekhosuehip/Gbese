@@ -167,7 +167,7 @@ router.post('/send/internal', sendMoneyInternal);
 router.post('/send/external', sendMoneyExternal);
 
 
-router.patch('/request/accept/:requestId', acceptRequest);
+router.post('/request/accept/:requestId', acceptRequest);
 /**
  * @swagger
  * /request/reject/{requestId}:
@@ -193,7 +193,7 @@ router.patch('/request/accept/:requestId', acceptRequest);
  *         description: Internal server error
  */
 
-router.patch('/request/reject/:requestId', rejectRequest);
+router.post('/request/reject/:requestId', rejectRequest);
 
 
 export default router
